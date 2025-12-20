@@ -57,6 +57,12 @@
             color: var(--secondary-color);
         }
 
+        .last-updated {
+            margin-top: 6px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
         main {
             display: flex;
             flex-direction: column;
@@ -317,6 +323,7 @@
         <header>
             <h1>Yann's Favorite Podcasts</h1>
             <p>Financial markets, trading insights & macro trends</p>
+            <p id="last-updated-info" class="last-updated" aria-live="polite"></p>
         </header>
 
         <main>
@@ -458,6 +465,7 @@
             const nowPlayingDescription = document.getElementById('now-playing-description');
             const nowPlayingMeta = document.getElementById('now-playing-meta');
             const episodeList = document.getElementById('episode-list');
+            const lastUpdatedInfo = document.getElementById('last-updated-info');
             const statusBanner = document.getElementById('status-banner');
             const statusMessage = document.getElementById('status-message');
             const statusIcon = document.getElementById('status-icon');
@@ -503,6 +511,14 @@
                     statusTimeoutId = null;
                 }
                 statusBanner.classList.add('status-banner--hidden');
+            }
+
+            function updateLastUpdated(sourceLabel) {
+                if (!lastUpdatedInfo) {
+                    return;
+                }
+                const formattedTimestamp = new Date().toLocaleString();
+                lastUpdatedInfo.textContent = `Last updated ${formattedTimestamp} — ${sourceLabel}`;
             }
 
             function sortEpisodesByDate(episodes) {
@@ -656,6 +672,7 @@
                             <p>We could not load any episodes right now. Try the sample list or import feeds.</p>
                         </div>
                     `;
+                    updateLastUpdated('No episodes available');
                     return;
                 }
 
@@ -842,6 +859,7 @@
                 setTimeout(() => {
                     podcastData = sortEpisodesByDate(sampleEpisodes);
                     renderEpisodes(podcastData);
+                    updateLastUpdated('Curated sample episodes');
                     if (announce) {
                         setStatus(`Loaded ${podcastData.length} sample episodes.`, 'success');
                     } else {
@@ -876,16 +894,19 @@
                     if (allEpisodes.length > 0) {
                         podcastData = sortEpisodesByDate(allEpisodes);
                         renderEpisodes(podcastData);
+                        updateLastUpdated('Live RSS feeds');
                         setStatus(`Loaded ${podcastData.length} episodes from live RSS feeds.`, 'success', 6000);
                     } else {
                         podcastData = sortEpisodesByDate(sampleEpisodes);
                         renderEpisodes(podcastData);
+                        updateLastUpdated('Curated sample episodes (fallback)');
                         setStatus('Unable to load live feeds right now. Showing curated sample episodes instead.', 'warning', 6000);
                     }
                 } catch (error) {
                     console.error('Failed to load RSS episodes', error);
                     podcastData = sortEpisodesByDate(sampleEpisodes);
                     renderEpisodes(podcastData);
+                    updateLastUpdated('Curated sample episodes (fallback)');
                     setStatus('Live feed fetch failed. Displaying sample episodes as a fallback.', 'error', 6000);
                 }
             }
