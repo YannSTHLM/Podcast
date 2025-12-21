@@ -76,13 +76,15 @@ a.click();
 
 ### File Structure
 ```
-podcast.html          # Main application file
+index.html           # Main application file
+podcast.html         # Legacy redirect to index.html
 test_enhanced.html   # Test and documentation page
+assets/audio/        # Embedded sample audio library
 ```
 
 ### Local Testing
 1. Start a local server: `python3 -m http.server 8080`
-2. Open browser to: `http://localhost:8080/podcast.html`
+2. Open browser to: `http://localhost:8080/index.html`
 3. Test all functionality including downloads
 
 ### Customization
