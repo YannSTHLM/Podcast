@@ -12,8 +12,8 @@
             --background-color: #ecf0f1;
             --card-background: #ffffff;
             --text-color: #34495e;
-            --border-color: #bdc3c7;
-            --hover-color: #f1f1f1;
+            --border-color: #d6dce2;
+            --hover-color: #f7f9fb;
             --success-color: #2ecc71;
             --warning-color: #f39c12;
             --error-color: #e74c3c;
@@ -36,7 +36,7 @@
         }
 
         .container {
-            max-width: 960px;
+            max-width: 1024px;
             width: 100%;
         }
 
@@ -174,6 +174,56 @@
             transform: translateY(-1px);
         }
 
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            background-color: var(--card-background);
+            border: 1px solid rgba(44, 62, 80, 0.08);
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1 1 220px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+        .filter-bar select,
+        .filter-bar input[type="search"] {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            color: var(--primary-color);
+            background-color: #fdfdfd;
+            transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+
+        .filter-bar select:focus-visible,
+        .filter-bar input[type="search"]:focus-visible {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+
+        .results-meta {
+            margin: -8px 4px 0;
+            text-align: center;
+            color: #5d6d7e;
+            font-size: 0.95rem;
+        }
+
         #episode-list {
             display: flex;
             flex-direction: column;
@@ -205,18 +255,27 @@
 
         .episode-details {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .episode-details h3 {
-            margin: 0 0 10px 0;
+            margin: 0;
             color: var(--primary-color);
             font-size: 1.25rem;
         }
 
-        .episode-details p {
-            margin: 0 0 12px 0;
+        .episode-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .episode-summary p {
+            margin: 0;
             font-size: 0.95rem;
-            line-height: 1.5;
+            line-height: 1.6;
             color: #566573;
         }
 
@@ -226,12 +285,24 @@
             font-size: 0.85rem;
         }
 
+        .episode-meta-link {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .episode-meta-link:hover,
+        .episode-meta-link:focus-visible {
+            text-decoration: underline;
+        }
+
         .episode-actions {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: flex-end;
             gap: 10px;
+            min-width: 150px;
         }
 
         .play-button,
@@ -288,11 +359,7 @@
             color: var(--error-color);
         }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 16px;
-            }
-
+        @media (max-width: 900px) {
             .episode-item {
                 flex-direction: column;
                 align-items: flex-start;
@@ -300,12 +367,20 @@
 
             .episode-actions {
                 flex-direction: row;
+                align-items: stretch;
                 width: 100%;
-                justify-content: flex-start;
+            }
+
+            .episode-actions button {
+                flex: 1 1 auto;
             }
         }
 
         @media (max-width: 540px) {
+            body {
+                padding: 16px;
+            }
+
             .control-button {
                 width: 100%;
                 text-align: center;
@@ -330,7 +405,7 @@
             <section id="player-section">
                 <div id="now-playing">
                     <h2 id="now-playing-title">Select an episode to play</h2>
-                    <p id="now-playing-description">Latest episodes from your favorite financial podcasts.</p>
+                    <p id="now-playing-description">Browse the full library of Yann's go-to investing and macro podcasts.</p>
                     <p id="now-playing-meta" class="now-playing-meta" aria-live="polite"></p>
                 </div>
                 <audio id="audio-player" controls preload="none">
@@ -343,18 +418,33 @@
                 <p id="status-message" class="status-banner__text"></p>
             </div>
 
-            <section class="controls" aria-label="Podcast data controls">
-                <button id="load-sample-btn" class="control-button" type="button">Load Sample Episodes</button>
-                <button id="load-rss-btn" class="control-button" type="button">Fetch RSS Feeds (Beta)</button>
+            <section class="controls" aria-label="Podcast library controls">
+                <button id="reload-library-btn" class="control-button" type="button">Reload Library</button>
+                <button id="reset-filters-btn" class="control-button" type="button">Reset Filters</button>
                 <button id="export-opml-btn" class="control-button" type="button">Export OPML</button>
                 <button id="import-opml-btn" class="control-button" type="button">Import OPML</button>
                 <input type="file" id="opml-file-input" accept=".opml,.xml,application/xml" hidden>
             </section>
 
+            <section class="filter-bar" aria-label="Filter podcasts">
+                <div class="filter-group">
+                    <label for="podcast-filter">Show</label>
+                    <select id="podcast-filter">
+                        <option value="all">All podcasts</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="search-input">Search</label>
+                    <input type="search" id="search-input" placeholder="Search titles or summaries" autocomplete="off">
+                </div>
+            </section>
+
+            <p id="results-meta" class="results-meta" aria-live="polite"></p>
+
             <div id="episode-list" role="list">
                 <div class="loading-message">
                     <h3>Loading episodes…</h3>
-                    <p>Hang tight while we get things ready.</p>
+                    <p>Hang tight while we prepare the entire collection.</p>
                 </div>
             </div>
         </main>
@@ -362,103 +452,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const sampleAudioCycle = [
-                'assets/audio/all-in-market-beat.wav',
-                'assets/audio/treasury-turmoil.wav',
-                'assets/audio/macro-outlook.wav',
-                'assets/audio/wealthion-strategies.wav',
-                'assets/audio/systematic-signals.wav'
-            ];
+            const LIBRARY_URL = 'data/podcasts.json';
+            const FALLBACK_AUDIO = 'assets/audio/all-in-market-beat.wav';
 
-            const sampleEpisodes = [
-                {
-                    title: 'All-In Podcast – Market Pulse Recap',
-                    description: 'Chamath, Jason, Sacks & Friedberg break down the biggest tech and market moves of the week with rapid-fire takes and smart banter.',
-                    pubDate: '2025-12-18T18:00:00Z',
-                    podcastName: 'All-In with Chamath, Jason, Sacks & Friedberg'
-                },
-                {
-                    title: 'Bloomberg Odd Lots – Treasury Market Turbulence',
-                    description: 'Odd Lots dives into what is really happening under the hood of the world’s most important market and why liquidity keeps disappearing.',
-                    pubDate: '2025-12-17T15:30:00Z',
-                    podcastName: 'Bloomberg Odd Lots'
-                },
-                {
-                    title: 'CNBC Fast Money – Trading Desk Debrief',
-                    description: 'The Fast Money traders unpack the day’s biggest moves, the trades they like next, and the risks they are watching most closely.',
-                    pubDate: '2025-12-16T22:15:00Z',
-                    podcastName: 'CNBC Fast Money'
-                },
-                {
-                    title: 'Masters in Business – Macro Outlook 2026',
-                    description: 'Barry Ritholtz interviews a top macro strategist about rates, recession odds, and where institutional capital is positioning for 2026.',
-                    pubDate: '2025-12-15T19:45:00Z',
-                    podcastName: 'Bloomberg Masters in Business'
-                },
-                {
-                    title: 'Macro Voices – Fed Pivot Deep Dive',
-                    description: 'Erik Townsend welcomes a panel of macro thinkers to discuss the Fed’s pivot, inflation expectations, and cross-asset implications.',
-                    pubDate: '2025-12-14T12:30:00Z',
-                    podcastName: 'Macro Voices'
-                },
-                {
-                    title: 'Forward Guidance – Global Liquidity Watch',
-                    description: 'Jack Farley and Joseph Wang decode central bank balance sheets, repo markets, and the microstructure signals that traders should not ignore.',
-                    pubDate: '2025-12-13T16:20:00Z',
-                    podcastName: 'Forward Guidance'
-                },
-                {
-                    title: 'Chat With Traders – Options Flow Secrets',
-                    description: 'Aaron Fifield talks with a veteran options trader about flow analytics, volatility surfaces, and constructing asymmetric risk-reward trades.',
-                    pubDate: '2025-12-12T20:10:00Z',
-                    podcastName: 'Chat With Traders'
-                },
-                {
-                    title: 'Excess Returns – Value vs. Growth in 2025',
-                    description: 'The Excess Returns crew compares value and growth factor performance, highlighting where fundamentals diverge from price action.',
-                    pubDate: '2025-12-11T14:05:00Z',
-                    podcastName: 'Excess Returns Podcast'
-                },
-                {
-                    title: 'Wealthion – Volatility Playbook',
-                    description: 'Wealthion assembles portfolio managers to outline hedging tactics, risk management frameworks, and how to stay invested through turbulence.',
-                    pubDate: '2025-12-10T13:40:00Z',
-                    podcastName: 'Wealthion'
-                },
-                {
-                    title: 'Top Traders Unplugged – Systematic Edge',
-                    description: 'Niels Kaastrup-Larsen and Moritz Seibert unpack systematic trend models, diversification math, and how to survive quant drawdowns.',
-                    pubDate: '2025-12-09T10:00:00Z',
-                    podcastName: 'Top Traders Unplugged'
-                }
-            ].map((episode, index) => ({
-                ...episode,
-                audioUrl: sampleAudioCycle[index % sampleAudioCycle.length]
-            }));
-
-            const opmlData = `<?xml version="1.0" encoding="UTF-8"?>
-<opml version="2.0">
-<head>
-<title>Yann's Favorite Podcasts</title>
-</head>
-<body>
-<outline text="All-In Podcast" title="All-In Podcast" type="rss" xmlUrl="https://rss.art19.com/the-all-in-podcast" htmlUrl="https://www.allinpodcast.co"/>
-<outline text="Bloomberg Odd Lots" title="Bloomberg Odd Lots" type="rss" xmlUrl="https://rss.art19.com/odd-lots" htmlUrl="https://www.bloomberg.com/podcasts/odd-lots"/>
-<outline text="Masters in Business" title="Masters in Business" type="rss" xmlUrl="https://feeds.megaphone.fm/WSJ2164206404" htmlUrl="https://www.bloomberg.com/podcasts/masters-in-business"/>
-<outline text="Macro Voices" title="Macro Voices" type="rss" xmlUrl="https://feeds.megaphone.fm/macrovoices" htmlUrl="https://macrovoices.com"/>
-<outline text="Forward Guidance" title="Forward Guidance" type="rss" xmlUrl="https://feeds.megaphone.fm/forwardguidance" htmlUrl="https://www.blockworks.co/podcast/forward-guidance"/>
-<outline text="Chat With Traders" title="Chat With Traders" type="rss" xmlUrl="https://feeds.megaphone.fm/chatwithtraders" htmlUrl="https://chatwithtraders.com"/>
-<outline text="Excess Returns" title="Excess Returns" type="rss" xmlUrl="https://feeds.transistor.fm/excess-returns" htmlUrl="https://www.validea.com/excess-returns-podcast"/>
-<outline text="Wealthion" title="Wealthion" type="rss" xmlUrl="https://feeds.megaphone.fm/wealthion" htmlUrl="https://wealthion.com"/>
-<outline text="Top Traders Unplugged" title="Top Traders Unplugged" type="rss" xmlUrl="https://feeds.libsyn.com/41606/rss" htmlUrl="https://www.toptradersunplugged.com"/>
-</body>
-</opml>`;
-
-            const corsProxies = [
-                'https://corsproxy.io/?',
-                'https://api.allorigins.win/raw?url=',
-                'https://api.codetabs.com/v1/proxy/?quest='
-            ];
+            const feedHtmlLookup = {
+                'all-in-podcast': 'https://www.allinpodcast.co',
+                'bloomberg-odd-lots': 'https://www.bloomberg.com/podcasts/odd-lots',
+                'cnbc-fast-money': 'https://www.cnbc.com/fast-money/',
+                'masters-in-business': 'https://www.bloomberg.com/podcasts/masters-in-business',
+                'macro-voices': 'https://macrovoices.com',
+                'forward-guidance': 'https://www.blockworks.co/podcast/forward-guidance',
+                'chat-with-traders': 'https://chatwithtraders.com',
+                'excess-returns': 'https://www.validea.com/excess-returns-podcast',
+                'wealthion': 'https://wealthion.com',
+                'top-traders-unplugged': 'https://www.toptradersunplugged.com'
+            };
 
             const audioPlayer = document.getElementById('audio-player');
             const nowPlayingTitle = document.getElementById('now-playing-title');
@@ -469,14 +477,23 @@
             const statusBanner = document.getElementById('status-banner');
             const statusMessage = document.getElementById('status-message');
             const statusIcon = document.getElementById('status-icon');
-            const sampleButton = document.getElementById('load-sample-btn');
-            const rssButton = document.getElementById('load-rss-btn');
+            const reloadButton = document.getElementById('reload-library-btn');
+            const resetFiltersButton = document.getElementById('reset-filters-btn');
             const exportButton = document.getElementById('export-opml-btn');
             const importButton = document.getElementById('import-opml-btn');
             const importInput = document.getElementById('opml-file-input');
+            const filterSelect = document.getElementById('podcast-filter');
+            const searchInput = document.getElementById('search-input');
+            const resultsMeta = document.getElementById('results-meta');
 
-            let podcastData = [];
+            let feeds = [];
+            let flattenedEpisodes = [];
+            let filteredEpisodes = [];
+            let activeFilter = 'all';
+            let searchTerm = '';
             let statusTimeoutId = null;
+            let currentEpisodeId = null;
+            let libraryMeta = { generatedAt: null };
 
             const statusMap = {
                 info: { icon: 'ℹ️', className: 'status-banner--info' },
@@ -498,7 +515,7 @@
                     clearTimeout(statusTimeoutId);
                 }
 
-                if (timeout) {
+                if (timeout && timeout > 0) {
                     statusTimeoutId = setTimeout(() => {
                         statusBanner.classList.add('status-banner--hidden');
                     }, timeout);
@@ -513,27 +530,207 @@
                 statusBanner.classList.add('status-banner--hidden');
             }
 
-            function updateLastUpdated(sourceLabel) {
+            function updateLastUpdated(label) {
                 if (!lastUpdatedInfo) {
                     return;
                 }
-                const formattedTimestamp = new Date().toLocaleString();
-                lastUpdatedInfo.textContent = `Last updated ${formattedTimestamp} — ${sourceLabel}`;
+                if (libraryMeta.generatedAt) {
+                    const formatted = formatTimestamp(libraryMeta.generatedAt);
+                    lastUpdatedInfo.textContent = `${label} • Snapshot: ${formatted}`;
+                } else {
+                    lastUpdatedInfo.textContent = label;
+                }
             }
 
-            function sortEpisodesByDate(episodes) {
-                return [...episodes].sort((a, b) => {
-                    const dateA = new Date(a.pubDate).getTime();
-                    const dateB = new Date(b.pubDate).getTime();
-                    return (Number.isNaN(dateB) ? 0 : dateB) - (Number.isNaN(dateA) ? 0 : dateA);
+            function formatTimestamp(value) {
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) {
+                    return value;
+                }
+                return `${date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })} ${date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+            }
+
+            function flattenFeeds(feedsList) {
+                return feedsList.flatMap((feed) => {
+                    const feedTitle = feed.title || 'Podcast';
+                    const feedSlug = feed.slug || feedTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                    const feedUrl = feed.feedUrl || '';
+                    const feedCategory = feed.category || '';
+                    return (Array.isArray(feed.episodes) ? feed.episodes : []).map((episode) => {
+                        const summary = episode.summary || '';
+                        const searchText = `${feedTitle} ${episode.title || ''} ${summary}`.toLowerCase();
+                        return {
+                            ...episode,
+                            feedTitle,
+                            feedSlug,
+                            feedUrl,
+                            feedCategory,
+                            searchText
+                        };
+                    });
                 });
             }
 
-            function getTimeAgo(date) {
-                if (!(date instanceof Date) || Number.isNaN(date)) {
-                    return '';
+            function populateFilterOptions(feedsList) {
+                const sortedFeeds = [...feedsList].sort((a, b) => a.title.localeCompare(b.title));
+                filterSelect.innerHTML = '<option value="all">All podcasts</option>';
+                sortedFeeds.forEach((feed) => {
+                    const option = document.createElement('option');
+                    option.value = feed.slug;
+                    option.textContent = feed.title;
+                    filterSelect.appendChild(option);
+                });
+            }
+
+            function applyFilters() {
+                filteredEpisodes = flattenedEpisodes.filter((episode) => {
+                    const matchesFeed = activeFilter === 'all' || episode.feedSlug === activeFilter;
+                    const matchesSearch = !searchTerm || episode.searchText.includes(searchTerm);
+                    return matchesFeed && matchesSearch;
+                });
+
+                if (filteredEpisodes.length === 0) {
+                    episodeList.innerHTML = `
+                        <div class="error-message">
+                            <h3>No episodes found</h3>
+                            <p>Try clearing filters or searching for another topic.</p>
+                        </div>
+                    `;
+                    updateResultsMeta(0);
+                    return;
                 }
 
+                renderEpisodes(filteredEpisodes);
+                updateResultsMeta(filteredEpisodes.length);
+            }
+
+            function updateResultsMeta(count) {
+                const podcastWord = feeds.length === 1 ? 'podcast' : 'podcasts';
+                const parts = [`${count} ${count === 1 ? 'episode' : 'episodes'}`, `${feeds.length} ${podcastWord}`];
+                if (activeFilter !== 'all') {
+                    const selectedFeed = feeds.find((feed) => feed.slug === activeFilter);
+                    if (selectedFeed) {
+                        parts.push(selectedFeed.title);
+                    }
+                }
+                if (searchTerm) {
+                    parts.push(`“${searchTerm}”`);
+                }
+                resultsMeta.textContent = parts.join(' · ');
+            }
+
+            function renderEpisodes(episodes) {
+                episodeList.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+
+                episodes.forEach((episode) => {
+                    const item = document.createElement('article');
+                    item.className = 'episode-item';
+                    item.setAttribute('role', 'listitem');
+                    item.dataset.episodeId = episode.id;
+
+                    const details = document.createElement('div');
+                    details.className = 'episode-details';
+
+                    const titleEl = document.createElement('h3');
+                    titleEl.textContent = episode.title || 'Untitled Episode';
+                    details.appendChild(titleEl);
+
+                    const summaryEl = document.createElement('div');
+                    summaryEl.className = 'episode-summary';
+                    populateSummary(summaryEl, episode.summary);
+                    details.appendChild(summaryEl);
+
+                    const metaEl = document.createElement('small');
+                    const pubDate = new Date(episode.pubDate);
+                    const formattedDate = Number.isNaN(pubDate) ? '' : pubDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                    const timeAgo = formatTimeAgo(pubDate);
+                    const metaPieces = [];
+                    if (episode.feedTitle) {
+                        metaPieces.push(episode.feedTitle);
+                    }
+                    if (formattedDate) {
+                        metaPieces.push(timeAgo ? `${formattedDate} (${timeAgo})` : formattedDate);
+                    }
+                    if (episode.duration) {
+                        metaPieces.push(formatDuration(episode.duration));
+                    }
+                    metaEl.append(document.createTextNode(metaPieces.join(' • ')));
+                    if (episode.feedUrl) {
+                        metaEl.append(' • ');
+                        const rssLink = document.createElement('a');
+                        rssLink.href = episode.feedUrl;
+                        rssLink.target = '_blank';
+                        rssLink.rel = 'noopener';
+                        rssLink.className = 'episode-meta-link';
+                        rssLink.textContent = 'RSS';
+                        metaEl.appendChild(rssLink);
+                    }
+                    details.appendChild(metaEl);
+
+                    const actions = document.createElement('div');
+                    actions.className = 'episode-actions';
+
+                    const playButton = document.createElement('button');
+                    playButton.type = 'button';
+                    playButton.className = 'play-button';
+                    playButton.dataset.id = episode.id;
+                    playButton.textContent = currentEpisodeId === episode.id ? 'Playing…' : 'Play';
+
+                    const downloadButton = document.createElement('button');
+                    downloadButton.type = 'button';
+                    downloadButton.className = 'download-button';
+                    downloadButton.dataset.id = episode.id;
+                    downloadButton.dataset.src = episode.audioUrl;
+                    downloadButton.dataset.title = episode.title || 'Podcast Episode';
+                    downloadButton.textContent = 'Download';
+
+                    actions.append(playButton, downloadButton);
+                    item.append(details, actions);
+                    fragment.append(item);
+                });
+
+                episodeList.append(fragment);
+            }
+
+            function populateSummary(container, summary) {
+                container.innerHTML = '';
+                if (!summary) {
+                    const paragraph = document.createElement('p');
+                    paragraph.textContent = 'No description available for this episode yet.';
+                    container.appendChild(paragraph);
+                    return;
+                }
+                const paragraphs = summary.split(/\n{2,}|(?<=\.)(?:\s{2,}|\n)/);
+                paragraphs.forEach((chunk) => {
+                    const text = chunk.trim();
+                    if (!text) return;
+                    const paragraph = document.createElement('p');
+                    paragraph.textContent = text;
+                    container.appendChild(paragraph);
+                });
+            }
+
+            function formatDuration(seconds) {
+                if (typeof seconds !== 'number' || Number.isNaN(seconds) || seconds <= 0) {
+                    return '';
+                }
+                const hrs = Math.floor(seconds / 3600);
+                const mins = Math.floor((seconds % 3600) / 60);
+                const secs = Math.floor(seconds % 60);
+                const parts = [];
+                if (hrs) {
+                    parts.push(`${hrs}h`);
+                }
+                parts.push(`${mins.toString().padStart(2, '0')}m`);
+                parts.push(`${secs.toString().padStart(2, '0')}s`);
+                return parts.join(' ');
+            }
+
+            function formatTimeAgo(date) {
+                if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+                    return '';
+                }
                 const diffMs = Date.now() - date.getTime();
                 const suffix = diffMs >= 0 ? 'ago' : 'from now';
                 const absDiff = Math.abs(diffMs);
@@ -562,197 +759,30 @@
                 return '';
             }
 
-            function createSafeFileName(title, mimeType = '', sourceUrl = '') {
-                const base = (title || 'episode')
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '_')
-                    .replace(/^_+|_+$/g, '') || 'episode';
-
-                const mime = (mimeType || '').toLowerCase();
-                const mimeMap = {
-                    'audio/mpeg': 'mp3',
-                    'audio/mp3': 'mp3',
-                    'audio/x-mpeg': 'mp3',
-                    'audio/aac': 'aac',
-                    'audio/wav': 'wav',
-                    'audio/x-wav': 'wav',
-                    'audio/ogg': 'ogg',
-                    'audio/webm': 'webm',
-                    'audio/flac': 'flac'
-                };
-
-                let extension = mimeMap[mime];
-
-                if (!extension && sourceUrl) {
-                    const match = sourceUrl.split('#')[0].split('?')[0].match(/\.([a-z0-9]+)$/i);
-                    if (match) {
-                        extension = match[1].toLowerCase();
-                    }
-                }
-
-                if (!extension || extension.length > 5) {
-                    extension = 'audio';
-                }
-
-                return `${base}.${extension}`;
-            }
-
-            function parseOPMLToFeeds(opmlText) {
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(opmlText, 'text/xml');
-                const outlines = Array.from(xmlDoc.querySelectorAll('outline[type="rss"]'));
-
-                return outlines
-                    .map((outline) => ({
-                        title: outline.getAttribute('title') || outline.getAttribute('text') || 'Podcast feed',
-                        xmlUrl: outline.getAttribute('xmlUrl') || outline.getAttribute('url') || '',
-                        htmlUrl: outline.getAttribute('htmlUrl') || ''
-                    }))
-                    .filter((feed) => Boolean(feed.xmlUrl));
-            }
-
-            async function fetchRSSFeed(feedUrl) {
-                for (const proxy of corsProxies) {
-                    try {
-                        const response = await fetch(proxy + encodeURIComponent(feedUrl));
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}`);
-                        }
-                        return await response.text();
-                    } catch (error) {
-                        console.warn(`Failed to fetch via ${proxy}`, error);
-                    }
-                }
-                throw new Error('All CORS proxies failed');
-            }
-
-            function parseRSSToEpisodes(rssText, podcastName) {
-                try {
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(rssText, 'text/xml');
-                    if (xmlDoc.querySelector('parsererror')) {
-                        throw new Error('Invalid RSS XML');
-                    }
-
-                    const items = Array.from(xmlDoc.querySelectorAll('item'));
-                    return items.slice(0, 4).map((item) => {
-                        const rawTitle = item.querySelector('title')?.textContent || 'Untitled Episode';
-                        const rawDescription = item.querySelector('description')?.textContent || item.querySelector('summary')?.textContent || 'No description available.';
-                        const cleanDescription = rawDescription.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-                        const pubDate = item.querySelector('pubDate')?.textContent || item.querySelector('published')?.textContent || new Date().toISOString();
-
-                        const enclosure = item.querySelector('enclosure[url][type*="audio"], enclosure[url$=".mp3"], enclosure[url$=".m4a"], enclosure[url$=".wav"]');
-                        const mediaContent = item.querySelector('media\\:content[url]');
-
-                        let audioUrl = enclosure?.getAttribute('url') || mediaContent?.getAttribute('url') || '';
-                        if (!audioUrl) {
-                            const linkCandidate = item.querySelector('link')?.textContent || item.querySelector('guid')?.textContent || '';
-                            audioUrl = linkCandidate;
-                        }
-
-                        return {
-                            title: rawTitle.trim(),
-                            description: cleanDescription,
-                            audioUrl: audioUrl.trim(),
-                            pubDate,
-                            podcastName
-                        };
-                    }).filter((episode) => Boolean(episode.audioUrl));
-                } catch (error) {
-                    console.warn('Failed to parse RSS feed', error);
-                    return [];
-                }
-            }
-
-            function renderEpisodes(episodes) {
-                if (!Array.isArray(episodes) || episodes.length === 0) {
-                    episodeList.innerHTML = `
-                        <div class="error-message">
-                            <h3>No episodes available</h3>
-                            <p>We could not load any episodes right now. Try the sample list or import feeds.</p>
-                        </div>
-                    `;
-                    updateLastUpdated('No episodes available');
-                    return;
-                }
-
-                episodeList.innerHTML = '';
-                const fragment = document.createDocumentFragment();
-
-                episodes.forEach((episode, index) => {
-                    const item = document.createElement('article');
-                    item.className = 'episode-item';
-                    item.setAttribute('role', 'listitem');
-
-                    const details = document.createElement('div');
-                    details.className = 'episode-details';
-
-                    const titleEl = document.createElement('h3');
-                    titleEl.textContent = episode.title;
-
-                    const descEl = document.createElement('p');
-                    descEl.textContent = episode.description;
-
-                    const metaEl = document.createElement('small');
-                    const pubDate = new Date(episode.pubDate);
-                    const formattedDate = Number.isNaN(pubDate) ? '' : pubDate.toLocaleDateString();
-                    const timeAgo = getTimeAgo(pubDate);
-                    const metaPieces = [episode.podcastName];
-                    if (formattedDate) {
-                        metaPieces.push(formattedDate + (timeAgo ? ` (${timeAgo})` : ''));
-                    }
-                    metaEl.textContent = metaPieces.join(' • ');
-
-                    details.append(titleEl, descEl, metaEl);
-
-                    const actions = document.createElement('div');
-                    actions.className = 'episode-actions';
-
-                    const playButton = document.createElement('button');
-                    playButton.type = 'button';
-                    playButton.className = 'play-button';
-                    playButton.dataset.src = episode.audioUrl;
-                    playButton.dataset.index = String(index);
-                    playButton.textContent = 'Play';
-
-                    const downloadButton = document.createElement('button');
-                    downloadButton.type = 'button';
-                    downloadButton.className = 'download-button';
-                    downloadButton.dataset.src = episode.audioUrl;
-                    downloadButton.dataset.title = episode.title;
-                    downloadButton.textContent = 'Download';
-
-                    actions.append(playButton, downloadButton);
-                    item.append(details, actions);
-                    fragment.append(item);
-                });
-
-                episodeList.append(fragment);
-            }
-
-            function updateNowPlaying(episode) {
-                nowPlayingTitle.textContent = episode.title;
-                nowPlayingDescription.textContent = episode.description;
-                const pubDate = new Date(episode.pubDate);
-                const formattedDate = Number.isNaN(pubDate) ? '' : pubDate.toLocaleDateString();
-                nowPlayingMeta.textContent = formattedDate ? `${episode.podcastName} • ${formattedDate}` : episode.podcastName;
-            }
-
             function handlePlayButtonClick(button) {
-                const index = Number(button.dataset.index);
-                if (Number.isNaN(index) || !podcastData[index]) {
+                const episodeId = button.dataset.id;
+                const episode = flattenedEpisodes.find((item) => item.id === episodeId);
+                if (!episode) {
                     setStatus('Unable to find that episode.', 'error');
                     return;
                 }
 
-                const episode = podcastData[index];
                 const previousActive = episodeList.querySelector('.episode-item.is-active');
                 if (previousActive) {
                     previousActive.classList.remove('is-active');
                 }
                 button.closest('.episode-item')?.classList.add('is-active');
 
+                currentEpisodeId = episode.id;
+                const playButtons = episodeList.querySelectorAll('.play-button');
+                playButtons.forEach((btn) => {
+                    btn.textContent = btn.dataset.id === episode.id ? 'Playing…' : 'Play';
+                });
+
+                delete audioPlayer.dataset.fallbackUsed;
+                audioPlayer.pause();
                 audioPlayer.src = episode.audioUrl;
+                audioPlayer.load();
                 audioPlayer.play()
                     .then(() => {
                         updateNowPlaying(episode);
@@ -761,6 +791,25 @@
                         console.error('Playback failed', error);
                         setStatus('Playback was blocked. Press play again to continue.', 'warning');
                     });
+            }
+
+            function updateNowPlaying(episode) {
+                nowPlayingTitle.textContent = episode.title || 'Now Playing';
+                nowPlayingDescription.textContent = episode.summary || 'Enjoy the episode!';
+                const pubDate = new Date(episode.pubDate);
+                const formattedDate = Number.isNaN(pubDate) ? '' : pubDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                const durationDisplay = formatDuration(episode.duration);
+                const metaParts = [];
+                if (episode.feedTitle) {
+                    metaParts.push(episode.feedTitle);
+                }
+                if (formattedDate) {
+                    metaParts.push(formattedDate);
+                }
+                if (durationDisplay) {
+                    metaParts.push(durationDisplay);
+                }
+                nowPlayingMeta.textContent = metaParts.join(' • ');
             }
 
             async function downloadEpisode(audioUrl, title, button) {
@@ -772,7 +821,7 @@
                 button.disabled = true;
                 button.classList.add('is-busy');
                 const originalText = button.textContent;
-                button.textContent = 'Downloading…';
+                button.textContent = 'Preparing…';
 
                 try {
                     const response = await fetch(audioUrl);
@@ -819,7 +868,7 @@
                     button.textContent = 'Saved!';
                     setStatus(`Downloaded "${title}".`, 'success');
                 } catch (error) {
-                    console.warn('Direct download failed; opening fallback link.', error);
+                    console.warn('Download failed, opening fallback link.', error);
                     const fallbackLink = document.createElement('a');
                     fallbackLink.href = audioUrl;
                     fallbackLink.target = '_blank';
@@ -837,129 +886,146 @@
                 }
             }
 
-            function handleDownloadButtonClick(button) {
-                const audioSrc = button.dataset.src;
-                const episodeTitle = button.dataset.title || 'Podcast Episode';
-                downloadEpisode(audioSrc, episodeTitle, button);
-            }
+            function createSafeFileName(title, mimeType = '', sourceUrl = '') {
+                const base = (title || 'episode')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '_')
+                    .replace(/^_+|_+$/g, '') || 'episode';
 
-            function loadSampleEpisodes({ announce = true } = {}) {
-                if (announce) {
-                    setStatus('Loading curated sample episodes…', 'info');
-                }
-
-                episodeList.innerHTML = `
-                    <div class="loading-message">
-                        <h3>Loading episodes…</h3>
-                        <p>This will only take a moment.</p>
-                    </div>
-                `;
-
-                const delay = announce ? 280 : 0;
-                setTimeout(() => {
-                    podcastData = sortEpisodesByDate(sampleEpisodes);
-                    renderEpisodes(podcastData);
-                    updateLastUpdated('Curated sample episodes');
-                    if (announce) {
-                        setStatus(`Loaded ${podcastData.length} sample episodes.`, 'success');
-                    } else {
-                        clearStatus();
-                    }
-                }, delay);
-            }
-
-            async function loadRSSEpisodes() {
-                setStatus('Fetching live RSS feeds…', 'info', 6000);
-                episodeList.innerHTML = `
-                    <div class="loading-message">
-                        <h3>Fetching RSS feeds…</h3>
-                        <p>We are pulling fresh episodes. This may take a few seconds.</p>
-                    </div>
-                `;
-
-                try {
-                    const feeds = parseOPMLToFeeds(opmlData);
-                    const allEpisodes = [];
-
-                    for (const feed of feeds) {
-                        try {
-                            const rssText = await fetchRSSFeed(feed.xmlUrl);
-                            const episodes = parseRSSToEpisodes(rssText, feed.title);
-                            allEpisodes.push(...episodes);
-                        } catch (error) {
-                            console.warn(`Failed to fetch ${feed.title}`, error);
-                        }
-                    }
-
-                    if (allEpisodes.length > 0) {
-                        podcastData = sortEpisodesByDate(allEpisodes);
-                        renderEpisodes(podcastData);
-                        updateLastUpdated('Live RSS feeds');
-                        setStatus(`Loaded ${podcastData.length} episodes from live RSS feeds.`, 'success', 6000);
-                    } else {
-                        podcastData = sortEpisodesByDate(sampleEpisodes);
-                        renderEpisodes(podcastData);
-                        updateLastUpdated('Curated sample episodes (fallback)');
-                        setStatus('Live RSS feeds were blocked (likely CORS). Demo episodes are ready below—use “Load Sample Episodes” anytime to reload them.', 'warning', 6500);
-                    }
-                } catch (error) {
-                    console.error('Failed to load RSS episodes', error);
-                    podcastData = sortEpisodesByDate(sampleEpisodes);
-                    renderEpisodes(podcastData);
-                    updateLastUpdated('Curated sample episodes (fallback)');
-                    setStatus('Live RSS fetch failed. Demo episodes have been auto-loaded—click “Load Sample Episodes” if you want to refresh them.', 'error', 6500);
-                }
-            }
-
-            function exportOPML() {
-                const blob = new Blob([opmlData], { type: 'application/xml' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'yanns-favorite-podcasts.opml';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                setStatus('Exported OPML file successfully.', 'success');
-            }
-
-            function handleOPMLImport(event) {
-                const file = event.target.files?.[0];
-                if (!file) {
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const contents = e.target?.result;
-                    if (typeof contents !== 'string') {
-                        setStatus('Could not read the OPML file.', 'error');
-                        return;
-                    }
-
-                    try {
-                        const feeds = parseOPMLToFeeds(contents);
-                        if (feeds.length === 0) {
-                            setStatus('No valid podcast feeds were found in that OPML file.', 'warning', 6000);
-                            return;
-                        }
-                        setStatus(`Imported ${feeds.length} feeds from OPML.`, 'success', 6000);
-                    } catch (error) {
-                        console.error('Failed to import OPML', error);
-                        setStatus('Failed to parse the OPML file.', 'error', 6000);
-                    }
+                const mime = (mimeType || '').toLowerCase();
+                const mimeMap = {
+                    'audio/mpeg': 'mp3',
+                    'audio/mp3': 'mp3',
+                    'audio/x-mpeg': 'mp3',
+                    'audio/aac': 'aac',
+                    'audio/wav': 'wav',
+                    'audio/x-wav': 'wav',
+                    'audio/ogg': 'ogg',
+                    'audio/webm': 'webm',
+                    'audio/flac': 'flac'
                 };
 
-                reader.readAsText(file);
-                importInput.value = '';
+                let extension = mimeMap[mime];
+
+                if (!extension && sourceUrl) {
+                    const match = sourceUrl.split('#')[0].split('?')[0].match(/\.([a-z0-9]+)$/i);
+                    if (match) {
+                        extension = match[1].toLowerCase();
+                    }
+                }
+
+                if (!extension || extension.length > 5) {
+                    extension = 'audio';
+                }
+
+                return `${base}.${extension}`;
             }
 
-            sampleButton.addEventListener('click', () => loadSampleEpisodes({ announce: true }));
-            rssButton.addEventListener('click', loadRSSEpisodes);
-            exportButton.addEventListener('click', exportOPML);
-            importButton.addEventListener('click', () => importInput.click());
-            importInput.addEventListener('change', handleOPMLImport);
+            function buildOPML(feedsList) {
+                const header = `<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n<head>\n<title>Yann's Favorite Podcasts</title>\n</head>\n<body>`;
+                const outlines = feedsList
+                    .filter((feed) => feed.feedUrl)
+                    .map((feed) => {
+                        const htmlUrl = feedHtmlLookup[feed.slug] || '';
+                        return `  <outline text="${escapeXML(feed.title)}" title="${escapeXML(feed.title)}" type="rss" xmlUrl="${escapeXML(feed.feedUrl)}"${htmlUrl ? ` htmlUrl="${escapeXML(htmlUrl)}"` : ''}/>`;
+                    })
+                    .join('\n');
+                const footer = '\n</body>\n</opml>';
+                return `${header}\n${outlines}${footer}`;
+            }
+
+            function escapeXML(value = '') {
+                return value
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            }
+
+            function parseOPMLToFeeds(opmlText) {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(opmlText, 'text/xml');
+                if (xmlDoc.querySelector('parsererror')) {
+                    throw new Error('Invalid OPML');
+                }
+                const outlines = Array.from(xmlDoc.querySelectorAll('outline[type="rss"]'));
+                return outlines.map((outline) => ({
+                    title: outline.getAttribute('title') || outline.getAttribute('text') || 'Podcast feed',
+                    xmlUrl: outline.getAttribute('xmlUrl') || outline.getAttribute('url') || '',
+                    htmlUrl: outline.getAttribute('htmlUrl') || ''
+                })).filter((feed) => Boolean(feed.xmlUrl));
+            }
+
+            async function loadLibrary({ showStatus = true } = {}) {
+                try {
+                    if (showStatus) {
+                        setStatus('Loading Yann’s podcast library…', 'info', 0);
+                    }
+                    const response = await fetch(LIBRARY_URL, { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    const data = await response.json();
+                    feeds = Array.isArray(data.feeds) ? data.feeds : [];
+                    libraryMeta.generatedAt = data.generatedAt || null;
+                    flattenedEpisodes = flattenFeeds(feeds);
+                    populateFilterOptions(feeds);
+                    activeFilter = 'all';
+                    searchTerm = '';
+                    filterSelect.value = 'all';
+                    searchInput.value = '';
+
+                    if (flattenedEpisodes.length === 0) {
+                        episodeList.innerHTML = `
+                            <div class="error-message">
+                                <h3>No episodes available</h3>
+                                <p>Add shows to <code>data/podcasts.json</code> to populate the library.</p>
+                            </div>
+                        `;
+                        updateResultsMeta(0);
+                        setStatus('Library loaded but contains no episodes yet.', 'warning', 6000);
+                    } else {
+                        applyFilters();
+                        setStatus(`Loaded ${flattenedEpisodes.length} episodes across ${feeds.length} podcasts.`, 'success');
+                    }
+
+                    updateLastUpdated('Library refreshed');
+                } catch (error) {
+                    console.error('Failed to load library', error);
+                    episodeList.innerHTML = `
+                        <div class="error-message">
+                            <h3>Unable to load library</h3>
+                            <p>Please check that <code>${LIBRARY_URL}</code> exists and try again.</p>
+                        </div>
+                    `;
+                    updateLastUpdated('Library unavailable');
+                    setStatus('Unable to load the episode library. Please refresh and try again.', 'error', 6000);
+                }
+            }
+
+            reloadButton.addEventListener('click', () => {
+                loadLibrary({ showStatus: true });
+            });
+
+            resetFiltersButton.addEventListener('click', () => {
+                activeFilter = 'all';
+                searchTerm = '';
+                filterSelect.value = 'all';
+                searchInput.value = '';
+                applyFilters();
+                setStatus('Filters cleared.', 'info');
+            });
+
+            filterSelect.addEventListener('change', (event) => {
+                activeFilter = event.target.value;
+                applyFilters();
+            });
+
+            searchInput.addEventListener('input', (event) => {
+                searchTerm = event.target.value.trim().toLowerCase();
+                applyFilters();
+            });
 
             episodeList.addEventListener('click', (event) => {
                 const playButton = event.target.closest('.play-button');
@@ -970,15 +1036,73 @@
 
                 const downloadButton = event.target.closest('.download-button');
                 if (downloadButton) {
-                    handleDownloadButtonClick(downloadButton);
+                    const episodeId = downloadButton.dataset.id;
+                    const episode = flattenedEpisodes.find((item) => item.id === episodeId);
+                    if (episode) {
+                        downloadEpisode(episode.audioUrl, episode.title || 'Podcast Episode', downloadButton);
+                    } else {
+                        setStatus('Unable to find that episode.', 'error');
+                    }
                 }
             });
 
-            audioPlayer.addEventListener('error', () => {
-                setStatus('The audio could not be loaded. Try a different episode.', 'error', 5000);
+            exportButton.addEventListener('click', () => {
+                const opmlContent = buildOPML(feeds);
+                const blob = new Blob([opmlContent], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'yanns-favorite-podcasts.opml';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                setStatus('Exported OPML file successfully.', 'success');
             });
 
-            loadSampleEpisodes({ announce: false });
+            importButton.addEventListener('click', () => importInput.click());
+
+            importInput.addEventListener('change', (event) => {
+                const file = event.target.files?.[0];
+                if (!file) {
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const contents = e.target?.result;
+                        if (typeof contents !== 'string') {
+                            throw new Error('Invalid file contents');
+                        }
+                        const importedFeeds = parseOPMLToFeeds(contents);
+                        if (importedFeeds.length === 0) {
+                            setStatus('No valid RSS feeds were found in that OPML file.', 'warning', 6000);
+                            return;
+                        }
+                        setStatus(`Imported ${importedFeeds.length} feed URLs. Add them to data/podcasts.json to include them here.`, 'success', 7000);
+                    } catch (error) {
+                        console.error('Failed to import OPML', error);
+                        setStatus('Failed to parse the OPML file.', 'error', 6000);
+                    }
+                };
+                reader.readAsText(file);
+                importInput.value = '';
+            });
+
+            audioPlayer.addEventListener('error', () => {
+                if (!audioPlayer.dataset.fallbackUsed) {
+                    audioPlayer.dataset.fallbackUsed = 'true';
+                    audioPlayer.src = FALLBACK_AUDIO;
+                    audioPlayer.load();
+                    audioPlayer.play().catch(() => {});
+                    setStatus('Episode audio could not be loaded. Playing fallback tone instead.', 'warning', 6000);
+                } else {
+                    setStatus('Audio playback failed. Try another episode.', 'error', 6000);
+                }
+            });
+
+            loadLibrary({ showStatus: false });
         });
     </script>
 </body>

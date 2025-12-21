@@ -1,0 +1,575 @@
+{
+  "generatedAt": "2025-12-20T10:00:00Z",
+  "feeds": [
+    {
+      "title": "All-In Podcast",
+      "slug": "all-in-podcast",
+      "description": "Chamath, Jason, Sacks & Friedberg debate the biggest stories in technology, markets, politics and culture from the operator point of view.",
+      "category": "Technology & Markets",
+      "feedUrl": "https://rss.art19.com/the-all-in-podcast",
+      "episodes": [
+        {
+          "id": "all-in-001",
+          "title": "Market Pulse Recap",
+          "summary": "The besties unpack record-setting highs in the Magnificent Seven, IPO pipeline rumblings, and whether the soft landing is already priced in.",
+          "pubDate": "2025-12-18T18:00:00Z",
+          "duration": 1805,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "all-in-002",
+          "title": "AI Regulation Roundtable",
+          "summary": "A spirited debate on the proposed US and EU guardrails for frontier AI labs and how regulation could impact open source innovation.",
+          "pubDate": "2025-12-11T18:00:00Z",
+          "duration": 2104,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "all-in-003",
+          "title": "Founder Resilience Stories",
+          "summary": "Three operators join the show to share hard-earned lessons about fundraising, pivots, and building durable cultures in 2025.",
+          "pubDate": "2025-12-04T18:00:00Z",
+          "duration": 1644,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "all-in-004",
+          "title": "The Consumer Slowdown",
+          "summary": "Data from Shopify, Visa, and Walmart paint a new portrait of discretionary spending. Is the US consumer finally tapped out?",
+          "pubDate": "2025-11-27T18:00:00Z",
+          "duration": 1726,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "all-in-005",
+          "title": "Startups After the AI Boom",
+          "summary": "Seed investors reveal how valuation discipline returned and why deep infra startups are back in vogue.",
+          "pubDate": "2025-11-20T18:00:00Z",
+          "duration": 1942,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "all-in-006",
+          "title": "Election Superforecasting",
+          "summary": "Political analysts handicap the 2026 midterms, crypto polling surprises, and what early fundraising signals reveal.",
+          "pubDate": "2025-11-13T18:00:00Z",
+          "duration": 2012,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        }
+      ]
+    },
+    {
+      "title": "Bloomberg Odd Lots",
+      "slug": "bloomberg-odd-lots",
+      "description": "Joe Weisenthal and Tracy Alloway explore the weird corners of the global economy, speaking with practitioners who know what is really happening.",
+      "category": "Economics",
+      "feedUrl": "https://rss.art19.com/odd-lots",
+      "episodes": [
+        {
+          "id": "odd-lots-001",
+          "title": "Treasury Market Turbulence Explained",
+          "summary": "Why off-the-run Treasuries seized up again, the latest from primary dealers, and what the Fed’s BTFP wind-down means next.",
+          "pubDate": "2025-12-17T15:30:00Z",
+          "duration": 2410,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "odd-lots-002",
+          "title": "Shipping Rates and the Red Sea",
+          "summary": "Logistics firms detail how rerouting around the Red Sea is hitting spot prices and playing into year-end inflation data.",
+          "pubDate": "2025-12-10T15:30:00Z",
+          "duration": 2201,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "odd-lots-003",
+          "title": "Carbon Markets 101",
+          "summary": "The voluntary carbon market saw record turnover in 2025. We unpack buyers, credits, and integrity improvements.",
+          "pubDate": "2025-12-03T15:30:00Z",
+          "duration": 1987,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "odd-lots-004",
+          "title": "Energy Traders vs. Winter",
+          "summary": "European gas traders share how they hedged the winter and why storage is only half the story now.",
+          "pubDate": "2025-11-26T15:30:00Z",
+          "duration": 2044,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "odd-lots-005",
+          "title": "The Copper Gap",
+          "summary": "A veteran mining analyst explains why copper supply is failing the energy transition timeline.",
+          "pubDate": "2025-11-19T15:30:00Z",
+          "duration": 1875,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "odd-lots-006",
+          "title": "Lessons from Japan’s Bond Traders",
+          "summary": "Tokyo desk veterans reflect on yield-curve control, the yen, and how to read BOJ signals in a post-YCC world.",
+          "pubDate": "2025-11-12T15:30:00Z",
+          "duration": 2108,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        }
+      ]
+    },
+    {
+      "title": "CNBC Fast Money",
+      "slug": "cnbc-fast-money",
+      "description": "The Fast Money traders break down the day’s news, revealing the trades they like best right now.",
+      "category": "Trading",
+      "feedUrl": "https://podcastfeeds.nbcnews.com/fast-money",
+      "episodes": [
+        {
+          "id": "fast-money-001",
+          "title": "Desk Debrief: Tech Rotation",
+          "summary": "Mega-cap growth cools as industrials surge. Traders debate positioning for Q1 2026 earnings season.",
+          "pubDate": "2025-12-16T22:15:00Z",
+          "duration": 2584,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "fast-money-002",
+          "title": "Options Flow Signals",
+          "summary": "Unusual options activity lights up semiconductors while crude calls dominate energy. Here are the trades to watch.",
+          "pubDate": "2025-12-15T22:15:00Z",
+          "duration": 1984,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "fast-money-003",
+          "title": "Year-End Playbook",
+          "summary": "Rebalancing dynamics, tax-loss harvesting, and why small caps could swing markets into the new year.",
+          "pubDate": "2025-12-12T22:15:00Z",
+          "duration": 1822,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "fast-money-004",
+          "title": "Biotech Breakouts",
+          "summary": "A healthcare analyst flags Phase III winners, top M&A targets, and ETF strategies for 2026 catalysts.",
+          "pubDate": "2025-12-11T22:15:00Z",
+          "duration": 1750,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "fast-money-005",
+          "title": "Crypto’s Institutional Bid",
+          "summary": "Bitcoin ETFs hit another inflow record. Traders discuss how to hedge the next volatility spike.",
+          "pubDate": "2025-12-09T22:15:00Z",
+          "duration": 2014,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "fast-money-006",
+          "title": "Retail Sales Shock",
+          "summary": "Retail majors slashed forecasts. Here’s how the desk is trading discretionary, staples, and payment rails.",
+          "pubDate": "2025-12-08T22:15:00Z",
+          "duration": 2120,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        }
+      ]
+    },
+    {
+      "title": "Masters in Business",
+      "slug": "masters-in-business",
+      "description": "Barry Ritholtz interviews the most fascinating minds in business and investing, going deep on process and performance.",
+      "category": "Investing",
+      "feedUrl": "https://feeds.megaphone.fm/WSJ2164206404",
+      "episodes": [
+        {
+          "id": "mib-001",
+          "title": "Macro Outlook 2026",
+          "summary": "A top macro strategist breaks down Fed policy, global liquidity, and how to position for the next regime.",
+          "pubDate": "2025-12-15T19:45:00Z",
+          "duration": 3204,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "mib-002",
+          "title": "Inside Sovereign Wealth Funds",
+          "summary": "The CIO of a $600B sovereign wealth fund details allocation shifts and private market opportunities.",
+          "pubDate": "2025-12-08T19:45:00Z",
+          "duration": 2880,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "mib-003",
+          "title": "Behavioral Alpha",
+          "summary": "A behavioral finance professor explains how to measure manager discipline and prevent mandate drift.",
+          "pubDate": "2025-12-01T19:45:00Z",
+          "duration": 2765,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "mib-004",
+          "title": "Venture Capital Reset",
+          "summary": "A veteran VC discusses fund pacing, secondaries, and why fewer but deeper bets define the next cycle.",
+          "pubDate": "2025-11-24T19:45:00Z",
+          "duration": 2651,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "mib-005",
+          "title": "The Rise of Private Credit",
+          "summary": "Private credit managers explain where spreads still compensate for illiquidity in 2026 vintages.",
+          "pubDate": "2025-11-17T19:45:00Z",
+          "duration": 2956,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "mib-006",
+          "title": "Quant Renaissance",
+          "summary": "A quant pioneer revisits factor investing’s evolution and emerging data sources powering new signals.",
+          "pubDate": "2025-11-10T19:45:00Z",
+          "duration": 2895,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        }
+      ]
+    },
+    {
+      "title": "Macro Voices",
+      "slug": "macro-voices",
+      "description": "Erik Townsend and Patrick Ceresna bring you the most important voices in macroeconomics, geopolitics, and markets each week.",
+      "category": "Macroeconomics",
+      "feedUrl": "https://feeds.megaphone.fm/macrovoices",
+      "episodes": [
+        {
+          "id": "macro-voices-001",
+          "title": "Fed Pivot Deep Dive",
+          "summary": "Panelists dissect the Fed’s pivot, term premium behavior, and synchronized easing signals from abroad.",
+          "pubDate": "2025-12-14T12:30:00Z",
+          "duration": 3420,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "macro-voices-002",
+          "title": "Dollar Wrecking Ball",
+          "summary": "FX strategists debate the next dollar leg and its impact on emerging market funding conditions.",
+          "pubDate": "2025-12-07T12:30:00Z",
+          "duration": 3011,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "macro-voices-003",
+          "title": "Crude Oil Crosscurrents",
+          "summary": "Energy analysts explain why shale discipline and geopolitical risks are rewriting the oil playbook.",
+          "pubDate": "2025-11-30T12:30:00Z",
+          "duration": 3156,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "macro-voices-004",
+          "title": "Gold at New Highs",
+          "summary": "Why gold broke above $2,500 and where the smart money sees the next consolidation zone.",
+          "pubDate": "2025-11-23T12:30:00Z",
+          "duration": 2987,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "macro-voices-005",
+          "title": "Volatility Regimes",
+          "summary": "Options pros outline how they hedge for regime shifts when realized vol refuses to cooperate.",
+          "pubDate": "2025-11-16T12:30:00Z",
+          "duration": 2875,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "macro-voices-006",
+          "title": "Global PMI Pulse",
+          "summary": "PMI watchers decode the latest diffusion indexes and why inventories could drive a Q1 re-acceleration.",
+          "pubDate": "2025-11-09T12:30:00Z",
+          "duration": 2768,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        }
+      ]
+    },
+    {
+      "title": "Forward Guidance",
+      "slug": "forward-guidance",
+      "description": "Blockworks macro host Jack Farley sits down with sophisticated investors to talk rate cycles, bond markets, and the plumbing of global liquidity.",
+      "category": "Macro & Rates",
+      "feedUrl": "https://feeds.megaphone.fm/forwardguidance",
+      "episodes": [
+        {
+          "id": "forward-guidance-001",
+          "title": "Global Liquidity Watch",
+          "summary": "Joseph Wang and Jack Farley map cross-border liquidity, repo dynamics, and how carry traders are positioned.",
+          "pubDate": "2025-12-13T16:20:00Z",
+          "duration": 3124,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "forward-guidance-002",
+          "title": "BoJ Surprise Playbook",
+          "summary": "Rates desks react to a sudden BoJ hike, the yen’s surge, and spillovers into Treasury term premium.",
+          "pubDate": "2025-12-06T16:20:00Z",
+          "duration": 2870,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "forward-guidance-003",
+          "title": "Mortgage Market Mechanics",
+          "summary": "Mortgage strategists outline why spreads remain wide despite the Fed’s dovish pivot.",
+          "pubDate": "2025-11-29T16:20:00Z",
+          "duration": 2740,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "forward-guidance-004",
+          "title": "Global Carry Trades",
+          "summary": "A tour of the hottest carry trades, how to size them, and the early warning signs for unwind pressure.",
+          "pubDate": "2025-11-22T16:20:00Z",
+          "duration": 2688,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "forward-guidance-005",
+          "title": "Shadow Banking Watch",
+          "summary": "Macro credit investors discuss private credit, unregulated leverage, and macro catalysts in 2026.",
+          "pubDate": "2025-11-15T16:20:00Z",
+          "duration": 2590,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "forward-guidance-006",
+          "title": "Inflation Forecasting",
+          "summary": "A former central banker explains the models that called the last inflation cycle and how they’re positioned now.",
+          "pubDate": "2025-11-08T16:20:00Z",
+          "duration": 2386,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        }
+      ]
+    },
+    {
+      "title": "Chat With Traders",
+      "slug": "chat-with-traders",
+      "description": "Aaron Fifield interviews professional traders to uncover tactics, mindset, and lessons from the markets.",
+      "category": "Trading Education",
+      "feedUrl": "https://feeds.megaphone.fm/chatwithtraders",
+      "episodes": [
+        {
+          "id": "cwt-001",
+          "title": "Options Flow Secrets",
+          "summary": "A former prop desk lead shares how to read dealer positioning and why options flow matters most on Fridays.",
+          "pubDate": "2025-12-12T20:10:00Z",
+          "duration": 3024,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "cwt-002",
+          "title": "Discipline Through Drawdowns",
+          "summary": "A veteran trend follower discusses keeping confidence when the system hits a 20% drawdown.",
+          "pubDate": "2025-12-05T20:10:00Z",
+          "duration": 2896,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "cwt-003",
+          "title": "Scalping Futures Liquidity",
+          "summary": "Automation, colocation, and how human scalp traders still win in the E-mini book.",
+          "pubDate": "2025-11-28T20:10:00Z",
+          "duration": 2765,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "cwt-004",
+          "title": "Crypto Market Microstructure",
+          "summary": "A digital asset market maker explains how liquidity is priced across centralized and decentralized venues.",
+          "pubDate": "2025-11-21T20:10:00Z",
+          "duration": 2684,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "cwt-005",
+          "title": "Maintaining Edge in AI Era",
+          "summary": "How discretionary traders blend machine learning with human pattern recognition in 2025.",
+          "pubDate": "2025-11-14T20:10:00Z",
+          "duration": 2544,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "cwt-006",
+          "title": "Risk Management Habits",
+          "summary": "Checklists, journaling, and pre-market routines that separate long-term winners from the rest.",
+          "pubDate": "2025-11-07T20:10:00Z",
+          "duration": 2446,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        }
+      ]
+    },
+    {
+      "title": "Excess Returns",
+      "slug": "excess-returns",
+      "description": "Validea’s Justin Carbonneau and Jack Forehand explore the data, drivers, and decisions behind factor investing and portfolio construction.",
+      "category": "Factor Investing",
+      "feedUrl": "https://feeds.transistor.fm/excess-returns",
+      "episodes": [
+        {
+          "id": "excess-returns-001",
+          "title": "Value vs. Growth in 2025",
+          "summary": "Factor investors debate the resurgence of value, how to measure quality, and what history says about 2026.",
+          "pubDate": "2025-12-11T14:05:00Z",
+          "duration": 2886,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "excess-returns-002",
+          "title": "Small Cap Resilience",
+          "summary": "Why small caps keep lagging, how to screen for balance sheet strength, and the top signals for a reversal.",
+          "pubDate": "2025-12-04T14:05:00Z",
+          "duration": 2634,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "excess-returns-003",
+          "title": "International Diversification",
+          "summary": "Emerging market allocation frameworks, hedging currency, and building robust global portfolios.",
+          "pubDate": "2025-11-27T14:05:00Z",
+          "duration": 2496,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "excess-returns-004",
+          "title": "Quality at a Reasonable Price",
+          "summary": "A practitioner’s guide to blending value, quality, and sentiment into a single scoring model.",
+          "pubDate": "2025-11-20T14:05:00Z",
+          "duration": 2387,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "excess-returns-005",
+          "title": "Behavioral Guardrails",
+          "summary": "How to keep clients invested through drawdowns and communicate factor underperformance.",
+          "pubDate": "2025-11-13T14:05:00Z",
+          "duration": 2308,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "excess-returns-006",
+          "title": "Data-Driven Portfolio Reviews",
+          "summary": "Using look-through analytics to identify true exposures and when to rebalance aggressively.",
+          "pubDate": "2025-11-06T14:05:00Z",
+          "duration": 2210,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        }
+      ]
+    },
+    {
+      "title": "Wealthion",
+      "slug": "wealthion",
+      "description": "Wealthion brings investors frank, actionable interviews with the economists, strategists, and money managers shaping markets.",
+      "category": "Wealth Management",
+      "feedUrl": "https://feeds.megaphone.fm/wealthion",
+      "episodes": [
+        {
+          "id": "wealthion-001",
+          "title": "Volatility Playbook",
+          "summary": "Portfolio managers outline hedging tactics, cash deployment rules, and scenario planning for 2026.",
+          "pubDate": "2025-12-10T13:40:00Z",
+          "duration": 3056,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "wealthion-002",
+          "title": "Income Strategies for Retirees",
+          "summary": "A retirement planner shares laddering approaches, CD vs. T-bill math, and how to think about annuities today.",
+          "pubDate": "2025-12-03T13:40:00Z",
+          "duration": 2844,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "wealthion-003",
+          "title": "Rebalancing After the Rally",
+          "summary": "What to sell, what to keep, and how to redeploy gains after double-digit equity returns.",
+          "pubDate": "2025-11-26T13:40:00Z",
+          "duration": 2680,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "wealthion-004",
+          "title": "Real Assets Revisited",
+          "summary": "Why farmland, infrastructure, and REITs still matter when inflation expectations cool.",
+          "pubDate": "2025-11-19T13:40:00Z",
+          "duration": 2590,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "wealthion-005",
+          "title": "Behavioral Investing Toolkit",
+          "summary": "Techniques to keep clients on plan, avoid performance chasing, and reframe volatility shocks.",
+          "pubDate": "2025-11-12T13:40:00Z",
+          "duration": 2418,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "wealthion-006",
+          "title": "Global Asset Allocation",
+          "summary": "A CIO discusses region weights, currency hedging, and their highest conviction tilts heading into 2026.",
+          "pubDate": "2025-11-05T13:40:00Z",
+          "duration": 2333,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        }
+      ]
+    },
+    {
+      "title": "Top Traders Unplugged",
+      "slug": "top-traders-unplugged",
+      "description": "Niels Kaastrup-Larsen explores the world of systematic investing, talking with the traders who run the strategies.",
+      "category": "Systematic Trading",
+      "feedUrl": "https://feeds.libsyn.com/41606/rss",
+      "episodes": [
+        {
+          "id": "ttu-001",
+          "title": "Systematic Edge",
+          "summary": "Trend following veterans analyze the latest CTA performance, diversification math, and how to survive quant drawdowns.",
+          "pubDate": "2025-12-09T10:00:00Z",
+          "duration": 3604,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        },
+        {
+          "id": "ttu-002",
+          "title": "Risk Parity Evolution",
+          "summary": "How risk parity managers are adapting to higher correlations and using commodities for ballast again.",
+          "pubDate": "2025-12-02T10:00:00Z",
+          "duration": 3426,
+          "audioUrl": "assets/audio/all-in-market-beat.wav"
+        },
+        {
+          "id": "ttu-003",
+          "title": "Quant Talent Pipeline",
+          "summary": "Recruiters and PMs talk about the new generation of quants, AI native tooling, and how to train future PMs.",
+          "pubDate": "2025-11-25T10:00:00Z",
+          "duration": 3314,
+          "audioUrl": "assets/audio/treasury-turmoil.wav"
+        },
+        {
+          "id": "ttu-004",
+          "title": "Machine Learning Systems",
+          "summary": "A systematic trader walks through how they productionized reinforcement learning without breaking risk limits.",
+          "pubDate": "2025-11-18T10:00:00Z",
+          "duration": 3205,
+          "audioUrl": "assets/audio/macro-outlook.wav"
+        },
+        {
+          "id": "ttu-005",
+          "title": "Allocating to CTAs",
+          "summary": "Institutional allocators describe how they size trend following today and the governance frameworks that work.",
+          "pubDate": "2025-11-11T10:00:00Z",
+          "duration": 3098,
+          "audioUrl": "assets/audio/wealthion-strategies.wav"
+        },
+        {
+          "id": "ttu-006",
+          "title": "Portfolio Construction Lab",
+          "summary": "A concrete example of blending diversifying strategies into traditional 60/40 portfolios without shocking clients.",
+          "pubDate": "2025-11-04T10:00:00Z",
+          "duration": 2942,
+          "audioUrl": "assets/audio/systematic-signals.wav"
+        }
+      ]
+    }
+  ]
+}
