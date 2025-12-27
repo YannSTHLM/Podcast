@@ -3,94 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Podcast Player Test</title>
+    <title>Podcast Library Smoke Test</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
+        :root {
+            color-scheme: light;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 24px;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+        h1 {
+            margin-bottom: 0.5rem;
+        }
+        h2 {
+            margin-top: 2rem;
         }
         .test-section {
-            background: #f5f5f5;
-            padding: 20px;
+            background: #f7f9fb;
+            padding: 20px 24px;
             margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #d6dce2;
+        }
+        .callout {
+            padding: 12px 16px;
             border-radius: 8px;
+            margin: 12px 0;
         }
-        .test-status { 
-            padding: 10px; 
-            border-radius: 4px; 
-            margin: 10px 0; 
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
-        .success { 
-            background: #d4edda; 
-            color: #155724; 
-            border: 1px solid #c3e6cb; 
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
-        .info { 
-            background: #d1ecf1; 
-            color: #0c5460; 
-            border: 1px solid #bee5eb; 
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
         }
-        .warning { 
-            background: #fff3cd; 
-            color: #856404; 
-            border: 1px solid #ffeaa7; 
+        .cta {
+            display: inline-block;
+            margin-top: 24px;
+            background: #3498db;
+            color: #ffffff;
+            padding: 14px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Enhanced Podcast Player Test</h1>
-    
+    <h1>Podcast Library QA Checklist</h1>
+    <p>Use this checklist to validate the static podcast library before publishing new builds.</p>
+
     <div class="test-section">
-        <h2>Enhanced Features Added:</h2>
-        <div class="test-status success">
-            <strong>✓ Download Functionality</strong>
+        <h2>🔍 Feature Matrix</h2>
+        <div class="callout success">
+            <strong>✓ Library &amp; Filtering</strong>
             <ul>
-                <li>Download buttons added to each episode</li>
-                <li>Progressive download with visual feedback</li>
-                <li>Automatic filename generation from episode title</li>
-                <li>Support for modern File System Access API</li>
-                <li>Fallback to traditional download method</li>
+                <li>Loads <code>data/podcasts.json</code> on initial render (no network proxies required).</li>
+                <li>Search box filters titles and summaries in real time.</li>
+                <li>Show dropdown switches between all nine podcasts.</li>
             </ul>
         </div>
-        
-        <div class="test-status info">
-            <strong>ℹ Technical Implementation:</strong>
+        <div class="callout success">
+            <strong>✓ Playback &amp; Downloads</strong>
             <ul>
-                <li>Fetch API for downloading audio files</li>
-                <li>Blob handling for file creation</li>
-                <li>Button state management (downloading/success)</li>
-                <li>Error handling with user feedback</li>
-                <li>Cross-browser compatibility</li>
+                <li>Play button updates the global player and highlights the active episode.</li>
+                <li>Download button triggers File System Access API (Chromium) or Blob fallback.</li>
+                <li>Fallback tone engages if an audio file is missing.</li>
             </ul>
         </div>
-        
-        <div class="test-status warning">
-            <strong>⚠ Browser Compatibility:</strong>
+        <div class="callout info">
+            <strong>ℹ️ Data &amp; Export</strong>
             <ul>
-                <li>Modern browsers: Full functionality with File System Access API</li>
-                <li>Older browsers: Traditional download method</li>
-                <li>Mobile browsers: Download to device storage</li>
+                <li>OPML export returns the current show list with feed URLs.</li>
+                <li>OPML import reports how many feed URLs were found for manual merging.</li>
+            </ul>
+        </div>
+        <div class="callout warning">
+            <strong>⚠️ Browser Notes</strong>
+            <ul>
+                <li>Autoplay may still require a manual play gesture (Safari/iOS).</li>
+                <li>File System Access API is Chromium only; others fall back automatically.</li>
             </ul>
         </div>
     </div>
 
     <div class="test-section">
-        <h2>How to Test:</h2>
+        <h2>🧪 Manual Test Steps</h2>
         <ol>
-            <li>Open the main podcast.html file in your browser</li>
-            <li>Look for the green "Download" button next to each episode</li>
-            <li>Click the Download button to save the episode locally</li>
-            <li>Monitor the button state changes during download</li>
-            <li>Check your Downloads folder for the saved audio file</li>
+            <li>Run <code>python3 -m http.server 8080</code> and open <code>http://localhost:8080/index.html</code>.</li>
+            <li>Confirm results banner reports episode + podcast counts.</li>
+            <li>Filter to “Macro Voices” and start playback; verify status banner updates.</li>
+            <li>Search for “volatility” and ensure the list narrows appropriately.</li>
+            <li>Download an episode and confirm the file name is slugified.</li>
+            <li>Export OPML and open the file to verify RSS URLs are present.</li>
         </ol>
     </div>
 
-    <div style="text-align: center; margin-top: 30px;">
-        <a href="/home/user/webapp/podcast.html" style="background: #3498db; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            🎵 Open Enhanced Podcast Player
-        </a>
-    </div>
+    <a class="cta" href="index.html">🎵 Open Podcast Library</a>
 </body>
 </html>

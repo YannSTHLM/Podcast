@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Podcasts</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect fill='%233498db' width='128' height='128' rx='24'/%3E%3Cpath fill='%23ffffff' d='M64 20c-22.09 0-40 17.91-40 40v32a12 12 0 0 0 12 12h4a8 8 0 0 0 8-8V68a8 8 0 0 0-8-8h-4a12 12 0 0 0-12 12V60c0-19.88 16.12-36 36-36s36 16.12 36 36v12a12 12 0 0 0-12-12h-4a8 8 0 0 0-8 8v28a8 8 0 0 0 8 8h4a12 12 0 0 0 12-12V60c0-22.09-17.91-40-40-40z'/%3E%3C/svg%3E">
+    
+    <style>
+        :root {
+            /* Light Theme Defaults */
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #ecf0f1;
+            --card-background: #ffffff;
+            --text-color: #34495e;
+            --text-secondary: #7f8c8d;
+            --border-color: #d6dce2;
+            --input-bg: #ffffff;
+            --hover-color: #f7f9fb;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+            --modal-overlay: rgba(0,0,0,0.5);
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Overrides */
+            --primary-color: #ecf0f1;
+            --secondary-color: #5dade2;
+            --background-color: #1a1a1a;
+            --card-background: #2d2d2d;
+            --text-color: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --border-color: #404040;
+            --input-bg: #333333;
+            --hover-color: #383838;
+            --modal-overlay: rgba(0,0,0,0.8);
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.3s ease, color 0.3s ease; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container { max-width: 1024px; width: 100%; position: relative; padding-bottom: 80px; }
+
+        /* Header & Theme Toggle */
+        header { text-align: center; margin-bottom: 30px; color: var(--primary-color); position: relative; }
+        header h1 { margin: 0; font-size: clamp(2rem, 3vw, 2.75rem); }
+        header p { margin: 8px 0 0 0; font-size: clamp(1rem, 2vw, 1.25rem); color: var(--secondary-color); }
+        .last-updated { margin-top: 6px; font-size: 0.85rem; color: var(--text-secondary); }
+
+        .theme-toggle {
+            position: absolute; top: 0; right: 0;
+            background: none; border: none; cursor: pointer; font-size: 1.5rem;
+            color: var(--text-color); padding: 5px; border-radius: 50%;
+        }
+        .theme-toggle:hover { background-color: var(--hover-color); }
+
+        main { display: flex; flex-direction: column; gap: 24px; }
+
+        /* Player */
+        #player-section {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 24px var(--shadow);
+            border: 1px solid var(--border-color);
+            position: sticky; top: 20px; z-index: 90;
+        }
+        #now-playing h2 { margin: 0; color: var(--primary-color); font-size: 1.5rem; }
+        #now-playing-description { margin: 10px 0 8px; font-size: 1rem; color: var(--text-secondary); }
+        .now-playing-meta { margin: 0; font-size: 0.9rem; color: var(--text-secondary); }
+        audio { width: 100%; margin-top: 18px; border-radius: 6px; background-color: #f1f3f5; }
+        [data-theme="dark"] audio { filter: invert(0.9); } 
+
+        /* Status */
+        #status-banner {
+            display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+            border-radius: 10px; border: 1px solid transparent;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+        .status-banner--hidden { display: none !important; }
+        .status-banner--info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+        .status-banner--success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .status-banner--warning { background-color: #fff3cd; color: #856404; border-color: #ffe8a1; }
+        .status-banner--error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+        /* Filters */
+        .filter-bar {
+            display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 16px 20px;
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; }
+        .filter-bar label { color: var(--text-color); font-size: 0.9rem; font-weight: 500; }
+        .filter-bar input, .filter-bar select {
+            padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color);
+            font-size: 0.95rem; width: 100%;
+            background-color: var(--input-bg); color: var(--text-color);
+        }
+
+        .results-meta { font-size: 0.9rem; color: var(--text-secondary); text-align: right; margin-top: -10px; }
+
+        /* Episodes */
+        .episode-item {
+            background-color: var(--card-background);
+            border-radius: 12px; padding: 20px;
+            display: flex; flex-direction: column; gap: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow);
+            margin-bottom: 16px;
+            transition: transform 0.2s;
+        }
+        .episode-item:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+        
+        .episode-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+        .episode-info { flex: 1; }
+        
+        .episode-meta-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+        .badge { 
+            font-size: 0.75rem; background: var(--hover-color); color: var(--text-secondary); 
+            padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border-color); white-space: nowrap;
+        }
+        
+        .episode-title { margin: 4px 0; color: var(--primary-color); font-size: 1.25rem; }
+        .podcast-name { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+        
+        .episode-description { color: var(--text-color); line-height: 1.5; font-size: 0.95rem; margin-top: 8px; opacity: 0.9; }
+        
+        /* Show Notes */
+        .full-notes { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 0.9rem; color: var(--text-color); }
+        .full-notes.active { display: block; }
+        .full-notes img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
+        .full-notes a { color: var(--secondary-color); }
+        .toggle-notes { 
+            background: none; border: none; padding: 0; color: var(--secondary-color); 
+            font-size: 0.85rem; cursor: pointer; text-decoration: underline; margin-top: 6px;
+        }
+
+        /* Buttons */
+        .action-row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+        .btn {
+            border: none; border-radius: 8px; padding: 10px 20px; 
+            font-size: 0.95rem; cursor: pointer; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-play { background-color: var(--secondary-color); color: #fff; font-weight: 600; }
+        .btn-download { 
+            background-color: var(--card-background); color: var(--text-color); border: 1px solid var(--border-color); 
+        }
+        .btn-download:hover { background-color: var(--hover-color); }
+
+        .btn-manage { background-color: var(--primary-color); color: var(--card-background); margin-top: 23px; width: 100%; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay); z-index: 1000;
+            display: none; justify-content: center; align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        
+        .modal-content {
+            background: var(--card-background); width: 100%; max-width: 700px; height: 85vh;
+            border-radius: 12px; display: flex; flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color);
+        }
+        
+        .modal-header {
+            padding: 15px 20px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--hover-color); border-radius: 12px 12px 0 0;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.25rem; color: var(--text-color); }
+        .close-btn { background: none; border: none; color: var(--text-color); font-size: 1.5rem; cursor: pointer; }
+        
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px; color: var(--text-color); }
+        
+        .section-title { font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .search-box { display: flex; gap: 10px; }
+        .search-box input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); }
+
+        /* Directory Results */
+        .directory-results {
+            display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;
+            border: 1px solid var(--border-color); padding: 8px; border-radius: 8px; background: var(--hover-color);
+        }
+        .directory-item {
+            display: flex; align-items: center; gap: 12px; padding: 8px; background: var(--card-background);
+            border: 1px solid var(--border-color); border-radius: 6px;
+        }
+        .directory-item img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+        .directory-info { flex: 1; overflow: hidden; }
+        .directory-title { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color); }
+        .directory-author { font-size: 0.75rem; color: var(--text-secondary); }
+        .btn-add-feed { background: var(--success-color); color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+
+        /* Feed List */
+        .feed-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-bottom: 1px solid var(--border-color); gap: 10px;
+        }
+        .feed-url { font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .feed-title { font-weight: 500; font-size: 0.95rem; color: var(--text-color); }
+        
+        .btn-delete { background: var(--error-color); color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: none; }
+
+        .modal-footer { 
+            padding: 15px 20px; background: var(--hover-color); 
+            border-top: 1px solid var(--border-color); 
+            display: flex; justify-content: space-between; border-radius: 0 0 12px 12px; 
+        }
+
+        .loading-message { text-align: center; color: var(--text-secondary); padding: 40px; }
+        .error-message { 
+            text-align: center; color: var(--error-color); padding: 20px; 
+            background: rgba(231, 76, 60, 0.1); border-radius: 8px; border: 1px solid var(--error-color);
+            margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .action-row { width: 100%; }
+            .btn { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <button class="theme-toggle" id="theme-toggle" title="Toggle Dark Mode">🌙</button>
+        <h1>Podcasts</h1>
+        <p>Curated episodes from around the web</p>
+        <div class="last-updated" id="last-updated"></div>
+    </header>
+
+    <main>
+        <div id="status-banner" class="status-banner--hidden">
+            <span class="status-banner__text" id="status-text"></span>
+        </div>
+
+        <section id="player-section">
+            <div id="now-playing">
+                <h2 id="now-playing-title">Select an episode</h2>
+                <div id="now-playing-description">Click 'Play' on any episode below to start listening.</div>
+                <p class="now-playing-meta" id="now-playing-meta"></p>
+            </div>
+            <audio id="audio-player" controls preload="none">
+                Your browser does not support the audio element.
+            </audio>
+        </section>
+
+        <section class="filter-bar">
+            <div class="filter-group">
+                <label for="search-input">Search</label>
+                <input type="search" id="search-input" placeholder="Filter by title or keyword...">
+            </div>
+            
+            <div class="filter-group">
+                <label for="sort-order">Sort Order</label>
+                <select id="sort-order">
+                    <option value="date-desc">Latest Episodes</option>
+                    <option value="podcast-az">Podcast Name (A-Z)</option>
+                    <option value="title-az">Episode Title (A-Z)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="podcast-filter">Filter by Podcast</label>
+                <select id="podcast-filter">
+                    <option value="all">All Podcasts</option>
+                </select>
+            </div>
+
+            <div class="filter-group" style="flex: 0 0 auto;">
+                <label>&nbsp;</label>
+                <button class="btn btn-manage" onclick="openManager()">Manage Feeds</button>
+            </div>
+            
+            <div class="filter-group" style="display:none;">
+                 <input type="file" id="opml-upload">
+            </div>
+        </section>
+
+        <div class="results-meta" id="results-count"></div>
+
+        <div id="episode-list">
+            <div class="loading-message">Initializing...</div>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="manage-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Manage Subscriptions</h2>
+            <button class="close-btn" onclick="closeManager()">×</button>
+        </div>
+        <div class="modal-body">
+            
+            <div>
+                <div class="section-title">Search Directory (Apple Podcasts)</div>
+                <div class="search-box">
+                    <input type="text" id="directory-search-input" placeholder="Search for a podcast (e.g. 'History', 'Tech')...">
+                    <button class="btn btn-play" onclick="searchDirectory()">Search</button>
+                </div>
+                <div id="directory-results" class="directory-results" style="display:none;"></div>
+            </div>
+
+            <div>
+                <div class="section-title">Or Add Manual URL</div>
+                <div class="search-box">
+                    <input type="url" id="new-feed-input" placeholder="Paste RSS Feed URL here...">
+                    <button class="btn btn-download" onclick="addNewFeed()">Add URL</button>
+                </div>
+            </div>
+
+            <div style="flex:1; overflow-y:auto; border-top:1px solid var(--border-color); padding-top:10px;">
+                <div class="section-title">Your Subscriptions (<span id="sub-count">0</span>)</div>
+                <div id="feed-manager-list"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-download" style="color: var(--error-color); border-color: var(--error-color);" onclick="resetFeeds()">Reset to Defaults</button>
+            <button class="btn btn-download" onclick="closeManager()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * DEFAULT FEEDS
+     */
+    const defaultFeeds = [
+        "https://allinchamathjason.libsyn.com/rss",
+        "https://www.spreaker.com/show/5725007/episodes/feed",
+        "https://atanyrate.podbean.com/feed.xml",
+        "https://www.omnycontent.com/d/playlist/e73c998e-6e60-432f-8610-ae210140c5b1/825d4e29-b616-46f4-afd7-ae2b0013005c/8b1dd624-a026-43e9-8b57-ae2b00130066/podcast.rss",
+        "https://feeds.simplecast.com/Nh1wIaXT",
+        "https://feeds.megaphone.fm/CWT9205947236",
+        "https://feeds.simplecast.com/szW8tJ16",
+        "https://feeds.simplecast.com/CqxTohm7",
+        "https://anchor.fm/s/e200a2d4/podcast/rss",
+        "https://commoditiesfocus.libsyn.com/rss",
+        "https://feed.podbean.com/mecardo/feed.xml",
+        "https://feed.pod.space/enmorkhistoria",
+        "https://etfspotlight.libsyn.com/rss",
+        "https://feeds.megaphone.fm/ASD6061651607",
+        "https://anchor.fm/s/9a1dfac/podcast/rss",
+        "https://api.substack.com/feed/podcast/1161254.rss",
+        "https://feeds.megaphone.fm/GLD9218176758",
+        "https://feeds.megaphone.fm/BLM4409767076",
+        "https://feeds.megaphone.fm/forwardguidance",
+        "https://fridayfinishline.libsyn.com/rss",
+        "https://feeds.libsyn.com/102774/rss",
+        "https://feeds.captivate.fm/tbtahqp6sp3tresiqm4bzf/",
+        "https://feeds.simplecast.com/qltQrd_8",
+        "https://feeds.captivate.fm/insightful-investor/",
+        "https://feeds.acast.com/public/shows/61e618c9d9ce8600126e77fa",
+        "https://feeds.simplecast.com/Cyw1tJ_z",
+        "https://api.substack.com/feed/podcast/656073.rss",
+        "https://rss.buzzsprout.com/2034153.rss",
+        "https://feeds.acast.com/public/shows/399a0c03-e9d0-4f9b-b8f1-64383023cb5c",
+        "https://feeds.acast.com/public/shows/65fc2de9cce203001600e0a4",
+        "https://macrohive.libsyn.com/rss",
+        "https://feeds.megaphone.fm/macrohorizons",
+        "https://rss.buzzsprout.com/2206288.rss",
+        "https://feed.podbean.com/macrovoices/feed.xml",
+        "https://feed.podbean.com/mckeanyflavell/feed.xml",
+        "https://feeds.megaphone.fm/EWWMN1909747317",
+        "https://rss.art19.com/money-for-the-rest-of-us",
+        "https://feeds.megaphone.fm/ARML8165884693",
+        "https://feeds.megaphone.fm/RRM3971763968",
+        "https://api.sr.se/api/rss/program/4428",
+        "https://feeds.acast.com/public/shows/65cf38bfd3bb5400161e754f",
+        "https://feed.podbean.com/notesontheweekahead/feed.xml",
+        "https://api.sr.se/api/rss/program/2523",
+        "https://rss.art19.com/now-whats-next",
+        "https://feeds.oggn.com/category/ogtw/feed/",
+        "https://globaloil.libsyn.com/rss",
+        "https://feeds.acast.com/public/shows/68dbe57346a2532cdd5600b8",
+        "https://feeds.megaphone.fm/NSR7393370733",
+        "https://api.sr.se/api/rss/pod/itunes/23791",
+        "https://anchor.fm/s/10928cc60/podcast/rss",
+        "https://feeds.megaphone.fm/RRM5151570998",
+        "https://feedcdn.podbean.com/saxostrats/feed.xml",
+        "https://feeds.megaphone.fm/NSR8236478683",
+        "https://feed.podbean.com/spectrumcommodities/feed.xml",
+        "https://feeds.megaphone.fm/onthemargin",
+        "https://feeds.acast.com/public/shows/62d1f29df280fb0013f8a8a5",
+        "https://feeds.soundcloud.com/users/soundcloud:users:233459956/sounds.rss",
+        "https://feeds.megaphone.fm/THRH1653885106",
+        "https://feed.pippa.io/public/shows/5c1d3a90e6bc692c38b2221f",
+        "https://feed.podbean.com/foreignaffairsmagazine/feed.xml",
+        "https://feeds.simplecast.com/QXaWSc4o",
+        "https://feed.podbean.com/timizi/feed.xml",
+        "https://rss.art19.com/the-insight",
+        "https://feeds.captivate.fm/jacob-shapiro/",
+        "https://feeds.libsyn.com/556816/rss",
+        "https://feeds.megaphone.fm/ALFINVESTMENTSTRATEGYBV2974145286",
+        "https://markethuddle.com/feed/podcast/",
+        "https://feeds.megaphone.fm/TIFM6133783130",
+        "https://anchor.fm/s/104219ecc/podcast/rss",
+        "https://feeds.libsyn.com/218297/rss",
+        "https://anchor.fm/s/eb1a1710/podcast/rss",
+        "https://optionblock.libsyn.com/rss",
+        "https://lancerobertsshow.libsyn.com/rss",
+        "https://feeds.megaphone.fm/ARML4010200722",
+        "https://feed.podbean.com/doubleline-the-sherman-show/feed.xml",
+        "https://feeds.megaphone.fm/CSIS2753183348",
+        "https://anchor.fm/s/eca7b164/podcast/rss",
+        "https://rss.art19.com/thoughts-on-the-market",
+        "https://feeds.megaphone.fm/GLD4256304026",
+        "https://feeds.captivate.fm/top-traders-unplugged/",
+        "https://anchor.fm/s/d9f6e850/podcast/rss",
+        "https://anchor.fm/s/e9684be4/podcast/rss",
+        "https://media.rss.com/unusualwhales/feed.xml",
+        "https://feeds.libsyn.com/100426/rss",
+        "https://www.spreaker.com/show/5725002/episodes/feed",
+        "https://feeds.megaphone.fm/GEMINIMEDIA5571845247",
+        "https://rss.buzzsprout.com/2437968.rss",
+        "https://feeds.soundcloud.com/users/soundcloud:users:180427518/sounds.rss"
+    ];
+
+    // -- State --
+    const STORAGE_KEY = 'podcasts_v1_feeds';
+    let activeFeeds = [];
+    let allEpisodes = [];
+    let urlToTitle = {}; 
+    
+    // -- Elements --
+    const audioPlayer = document.getElementById('audio-player');
+    const episodeListEl = document.getElementById('episode-list');
+    const statusBanner = document.getElementById('status-banner');
+    const statusText = document.getElementById('status-text');
+
+    // -- Initialization --
+    document.addEventListener('DOMContentLoaded', () => {
+        initTheme();
+        initFeeds();
+        loadLibrary(activeFeeds);
+        
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch(err => console.log('SW Registration Failed', err));
+        }
+
+        document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleDateString()}`;
+    });
+
+    // --- Theme Logic ---
+    function initTheme() {
+        const toggleBtn = document.getElementById('theme-toggle');
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            toggleBtn.textContent = '☀️';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            if (current === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                toggleBtn.textContent = '🌙';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                toggleBtn.textContent = '☀️';
+            }
+        });
+    }
+
+    function initFeeds() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                activeFeeds = JSON.parse(stored);
+            } catch(e) { activeFeeds = defaultFeeds; }
+        } else {
+            activeFeeds = [...defaultFeeds];
+            saveFeeds();
+        }
+    }
+
+    function saveFeeds() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(activeFeeds));
+    }
+
+    // --- Feed Manager Logic ---
+    function openManager() {
+        document.getElementById('manage-modal').classList.add('active');
+        renderManagerList();
+    }
+    
+    function closeManager() {
+        document.getElementById('manage-modal').classList.remove('active');
+        // Clear search
+        document.getElementById('directory-results').innerHTML = '';
+        document.getElementById('directory-results').style.display = 'none';
+        document.getElementById('directory-search-input').value = '';
+        const oldScript = document.getElementById('itunes-script');
+        if (oldScript) oldScript.remove();
+    }
+
+    function renderManagerList() {
+        const container = document.getElementById('feed-manager-list');
+        container.innerHTML = '';
+        document.getElementById('sub-count').textContent = activeFeeds.length;
+        
+        activeFeeds.forEach(url => {
+            const title = urlToTitle[url] || "Loading title...";
+            const div = document.createElement('div');
+            div.className = 'feed-list-item';
+            div.innerHTML = `
+                <div class="feed-info">
+                    <div class="feed-title">${escapeHtml(title)}</div>
+                    <div class="feed-url">${escapeHtml(url)}</div>
+                </div>
+                <button class="btn-delete" onclick="removeFeed('${url}')">Remove</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function removeFeed(url) {
+        if (!confirm("Remove this podcast?")) return;
+        activeFeeds = activeFeeds.filter(f => f !== url);
+        saveFeeds();
+        renderManagerList();
+        
+        allEpisodes = allEpisodes.filter(ep => ep.originalFeed !== url);
+        applyFilters();
+        populateFilter(allEpisodes);
+    }
+
+    // --- FIXED Directory Search (JSONP) ---
+    function searchDirectory() {
+        const term = document.getElementById('directory-search-input').value.trim();
+        if (!term) return;
+
+        const resultsDiv = document.getElementById('directory-results');
+        resultsDiv.style.display = 'block';
+        resultsDiv.innerHTML = '<div style="padding:10px; color:var(--text-secondary);">Searching Apple Podcasts...</div>';
+
+        // Clean up old script
+        const oldScript = document.getElementById('itunes-script');
+        if (oldScript) oldScript.remove();
+
+        // JSONP script injection
+        const script = document.createElement('script');
+        script.id = 'itunes-script';
+        const safeTerm = encodeURIComponent(term);
+        script.src = `https://itunes.apple.com/search?media=podcast&entity=podcast&term=${safeTerm}&limit=15&callback=processItunesResults`;
+        
+        script.onerror = () => {
+             resultsDiv.innerHTML = '<div style="padding:10px; color:var(--error-color);">Network error connecting to Apple.</div>';
+        };
+
+        document.body.appendChild(script);
+    }
+
+    // Global callback for JSONP
+    window.processItunesResults = function(data) {
+        const resultsDiv = document.getElementById('directory-results');
+        resultsDiv.innerHTML = '';
+
+        if (!data || data.resultCount === 0) {
+            resultsDiv.innerHTML = '<div style="padding:10px; color:var(--text-secondary);">No results found.</div>';
+            return;
+        }
+
+        data.results.forEach(pod => {
+            const el = document.createElement('div');
+            el.className = 'directory-item';
+            el.innerHTML = `
+                <img src="${pod.artworkUrl60 || ''}" alt="cover">
+                <div class="directory-info">
+                    <div class="directory-title">${escapeHtml(pod.collectionName)}</div>
+                    <div class="directory-author">${escapeHtml(pod.artistName)}</div>
+                </div>
+                <button class="btn-add-feed" onclick="addFromSearch('${pod.feedUrl}')">Add</button>
+            `;
+            resultsDiv.appendChild(el);
+        });
+    };
+
+    function addFromSearch(url) {
+        if (!url) return alert("Error: This podcast has no valid RSS feed.");
+        if (activeFeeds.includes(url)) {
+            alert("You are already subscribed to this feed.");
+            return;
+        }
+        document.getElementById('new-feed-input').value = url;
+        addNewFeed();
+    }
+
+    async function addNewFeed() {
+        const input = document.getElementById('new-feed-input');
+        const url = input.value.trim();
+        if (!url) return;
+        
+        if (activeFeeds.includes(url)) {
+            alert("This feed is already in your list.");
+            return;
+        }
+
+        const originalBtnText = event.target ? event.target.textContent : "Add";
+        if(event.target) event.target.textContent = "Loading...";
+        input.disabled = true;
+
+        const result = await fetchRSS(url);
+        if (result) {
+            activeFeeds.push(url);
+            saveFeeds();
+            
+            let newEps = [];
+            if (result.type === 'xml_string') newEps = parseXML(result.content, url);
+            else newEps = parseJSON(result.content, url);
+            
+            if (newEps.length > 0) {
+                urlToTitle[url] = newEps[0].podcastTitle;
+                allEpisodes = allEpisodes.concat(newEps);
+                sortEpisodes(allEpisodes, document.getElementById('sort-order').value);
+                
+                populateFilter(allEpisodes);
+                applyFilters();
+                renderManagerList();
+                
+                input.value = "";
+                alert(`Subscribed to "${newEps[0].podcastTitle}"`);
+            } else {
+                alert("Feed found, but contained no episodes.");
+            }
+        } else {
+            alert("Could not load feed. Check URL or CORS.");
+        }
+        input.disabled = false;
+        if(event.target) event.target.textContent = originalBtnText;
+    }
+
+    function resetFeeds() {
+        if(confirm("This will delete all custom feeds and restore the default list. Are you sure?")) {
+            activeFeeds = [...defaultFeeds];
+            saveFeeds();
+            location.reload(); 
+        }
+    }
+
+    // --- Fetch & Core Logic ---
+    async function fetchRSS(url) {
+        try {
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            const res = await fetchWithTimeout(proxyUrl, 8000);
+            if (res.ok) {
+                const text = await res.text();
+                return { content: text, type: 'xml_string' };
+            }
+        } catch (e) {}
+
+        try {
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            const res = await fetchWithTimeout(proxyUrl, 8000);
+            const data = await res.json();
+            if (data.contents) return { content: data.contents, type: 'xml_string' };
+        } catch (e) {}
+        
+        try {
+            const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
+            const res = await fetchWithTimeout(proxyUrl, 5000);
+            const data = await res.json();
+            if (data.status === 'ok') return { content: data, type: 'json_obj' };
+        } catch (e) {}
+
+        return null; 
+    }
+
+    async function fetchWithTimeout(resource, timeout = 8000) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        const response = await fetch(resource, { signal: controller.signal });
+        clearTimeout(id);
+        return response;
+    }
+
+    // --- Player Logic ---
+    function playEpisode(url, title, podcastTitle) {
+        if (!url) return;
+        let secureUrl = url.replace(/^http:\/\//, 'https://');
+        document.getElementById('now-playing-title').textContent = title;
+        document.getElementById('now-playing-description').textContent = `Playing: ${podcastTitle}`;
+        document.getElementById('now-playing-meta').textContent = "Buffering...";
+        audioPlayer.src = secureUrl;
+        audioPlayer.play()
+            .then(() => {
+                document.getElementById('now-playing-meta').textContent = "Now Playing";
+                setStatus(`Playing: ${title}`, 'success', 3000);
+            })
+            .catch(e => {
+                if (secureUrl !== url) { audioPlayer.src = url; audioPlayer.play(); } 
+                else { setStatus("Playback failed.", 'error'); }
+            });
+    }
+
+    async function downloadEpisode(url, filename, btn) {
+        const originalText = btn.textContent;
+        btn.textContent = "Downloading...";
+        btn.disabled = true;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Blocked");
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+            btn.textContent = "Saved!";
+        } catch (error) {
+            window.open(url, '_blank');
+            btn.textContent = "Opened Tab";
+            setStatus("Direct download blocked. Opened in new tab.", "warning", 4000);
+        }
+        setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 2000);
+    }
+
+    // --- Data Loading ---
+    async function loadLibrary(feeds) {
+        setStatus("Fetching podcasts...", 'info');
+        episodeListEl.innerHTML = '<div class="loading-message">Loading feeds...</div>';
+        
+        allEpisodes = [];
+        let successCount = 0;
+        let isFirstLoad = true;
+
+        const promises = feeds.map(async (url) => {
+            const result = await fetchRSS(url);
+            if (result) {
+                let newEpisodes = [];
+                if (result.type === 'xml_string') newEpisodes = parseXML(result.content, url);
+                else if (result.type === 'json_obj') newEpisodes = parseJSON(result.content, url);
+
+                if (newEpisodes.length > 0) {
+                    successCount++;
+                    urlToTitle[url] = newEpisodes[0].podcastTitle;
+                    allEpisodes = allEpisodes.concat(newEpisodes);
+                    sortEpisodes(allEpisodes, document.getElementById('sort-order').value);
+                    
+                    if (isFirstLoad) {
+                        episodeListEl.innerHTML = '';
+                        isFirstLoad = false;
+                    }
+                    populateFilter(allEpisodes);
+                    applyFilters();
+                    setStatus(`Loaded ${successCount} feeds...`, 'info');
+                } else { urlToTitle[url] = "Empty Feed"; }
+            } else { urlToTitle[url] = "Failed to Load"; }
+        });
+
+        await Promise.allSettled(promises);
+        
+        if (allEpisodes.length === 0) {
+            episodeListEl.innerHTML = '<div class="error-message">Failed to load podcasts.</div>';
+            setStatus("Failed to load any podcasts.", 'error');
+        } else {
+            setStatus(`Done! Loaded ${allEpisodes.length} episodes.`, 'success', 5000);
+        }
+    }
+
+    // --- Parsers ---
+    function parseXML(xmlString, url) {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlString, "text/xml");
+        let channel = xml.querySelector('channel') || xml.querySelector('feed');
+        if (!channel) return [];
+
+        let podcastTitle = channel.querySelector('title')?.textContent || "Unknown Podcast";
+        let items = Array.from(channel.querySelectorAll('item'));
+        if (items.length === 0) items = Array.from(channel.querySelectorAll('entry'));
+
+        return items.map(item => {
+            const title = item.querySelector('title')?.textContent || 'Untitled';
+            const pubDateStr = item.querySelector('pubDate')?.textContent || item.querySelector('published')?.textContent;
+            const pubDate = pubDateStr ? new Date(pubDateStr) : new Date();
+            let description = item.querySelector('description')?.textContent || item.querySelector('summary')?.textContent || '';
+            const contentEncoded = item.getElementsByTagName('content:encoded')[0]?.textContent || description;
+            const cleanDesc = description.replace(/<[^>]*>/g, '').substring(0, 180) + '...';
+
+            let audioUrl = null; let fileSize = null;
+            const enclosure = item.querySelector('enclosure');
+            if (enclosure) { audioUrl = enclosure.getAttribute('url'); fileSize = enclosure.getAttribute('length'); }
+            else { const link = item.querySelector('link[rel="enclosure"]'); if (link) audioUrl = link.getAttribute('href'); }
+            let duration = item.getElementsByTagName('itunes:duration')[0]?.textContent;
+
+            if (!audioUrl) return null;
+            return { title, podcastTitle, pubDate, description: cleanDesc, fullContent: contentEncoded, audioUrl, duration, fileSize, originalFeed: url };
+        }).filter(Boolean);
+    }
+
+    function parseJSON(data, url) {
+        const podcastTitle = data.feed.title || "Unknown Podcast";
+        return data.items.map(item => ({
+            title: item.title, podcastTitle, pubDate: new Date(item.pubDate),
+            description: (item.description || '').replace(/<[^>]*>/g, '').substring(0, 180) + '...',
+            fullContent: item.content || item.description, audioUrl: item.enclosure.link,
+            duration: null, fileSize: item.enclosure.length, originalFeed: url
+        }));
+    }
+
+    function sortEpisodes(episodes, sortType) {
+        if (sortType === 'date-desc') episodes.sort((a, b) => b.pubDate - a.pubDate);
+        else if (sortType === 'podcast-az') episodes.sort((a, b) => a.podcastTitle.localeCompare(b.podcastTitle));
+        else if (sortType === 'title-az') episodes.sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    function renderEpisodes(episodes) {
+        const displayList = episodes.slice(0, 50);
+        episodeListEl.innerHTML = '';
+        if (displayList.length === 0) { episodeListEl.innerHTML = '<div class="loading-message">No episodes match.</div>'; return; }
+
+        const fragment = document.createDocumentFragment();
+        displayList.forEach(ep => {
+            const el = document.createElement('div');
+            el.className = 'episode-item';
+            let badgesHtml = `<span class="badge">${ep.pubDate.toLocaleDateString()}</span>`;
+            if (ep.duration) badgesHtml += `<span class="badge">⏱ ${formatDuration(ep.duration)}</span>`;
+            if (ep.fileSize) badgesHtml += `<span class="badge">💾 ${formatSize(ep.fileSize)}</span>`;
+            const safeFilename = `${ep.podcastTitle} - ${ep.title}.mp3`.replace(/[^a-z0-9 \.\-_]/gi, '_');
+
+            el.innerHTML = `
+                <div class="episode-info">
+                    <div class="podcast-name">${escapeHtml(ep.podcastTitle)}</div>
+                    <h3 class="episode-title">${escapeHtml(ep.title)}</h3>
+                    <div class="episode-meta-badges">${badgesHtml}</div>
+                    <div class="episode-description">${escapeHtml(ep.description)}</div>
+                    ${ep.fullContent ? `<button class="toggle-notes" onclick="this.nextElementSibling.classList.toggle('active')">Show Notes</button><div class="full-notes">${ep.fullContent}</div>` : ''}
+                </div>
+                <div class="action-row">
+                    <button class="btn btn-play">▶ Play Episode</button>
+                    <button class="btn btn-download">Download</button>
+                </div>`;
+            el.querySelector('.btn-play').onclick = () => playEpisode(ep.audioUrl, ep.title, ep.podcastTitle);
+            const dlBtn = el.querySelector('.btn-download');
+            dlBtn.onclick = () => downloadEpisode(ep.audioUrl, safeFilename, dlBtn);
+            fragment.appendChild(el);
+        });
+        episodeListEl.appendChild(fragment);
+        document.getElementById('results-count').textContent = `Showing ${displayList.length} episodes`;
+    }
+
+    function formatDuration(secStr) {
+        if (!secStr) return ''; if (secStr.includes(':')) return secStr;
+        const sec = parseInt(secStr, 10); if (isNaN(sec)) return '';
+        const h = Math.floor(sec / 3600); const m = Math.floor((sec % 3600) / 60);
+        return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    }
+    function formatSize(bytes) {
+        if (!bytes) return ''; const mb = parseInt(bytes) / (1024 * 1024);
+        return isNaN(mb) ? '' : `${mb.toFixed(1)} MB`;
+    }
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function populateFilter(episodes) {
+        const select = document.getElementById('podcast-filter');
+        const currentVal = select.value;
+        const uniquePods = [...new Set(episodes.map(e => e.podcastTitle))].sort();
+        select.innerHTML = '<option value="all">All Podcasts</option>';
+        uniquePods.forEach(title => {
+            const opt = document.createElement('option'); opt.value = title; opt.textContent = title;
+            if (title === currentVal) opt.selected = true; select.appendChild(opt);
+        });
+    }
+
+    function applyFilters() {
+        const term = document.getElementById('search-input').value.toLowerCase();
+        const podFilter = document.getElementById('podcast-filter').value;
+        const sortType = document.getElementById('sort-order').value;
+        let filtered = allEpisodes.filter(ep => {
+            return (ep.title.toLowerCase().includes(term) || ep.description.toLowerCase().includes(term)) &&
+                   (podFilter === 'all' || ep.podcastTitle === podFilter);
+        });
+        sortEpisodes(filtered, sortType);
+        renderEpisodes(filtered);
+    }
+
+    function setStatus(msg, type = 'info', duration = 0) {
+        statusText.textContent = msg; statusBanner.className = `status-banner--${type}`;
+        if (duration > 0) setTimeout(() => statusBanner.className = 'status-banner--hidden', duration);
+    }
+
+    document.getElementById('directory-search-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') searchDirectory();
+    });
+
+    document.getElementById('search-input').addEventListener('input', applyFilters);
+    document.getElementById('podcast-filter').addEventListener('change', applyFilters);
+    document.getElementById('sort-order').addEventListener('change', applyFilters);
+</script>
+</body>
+</html>
