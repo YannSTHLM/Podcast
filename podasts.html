@@ -230,6 +230,10 @@
         .feed-title { font-weight: 500; font-size: 0.95rem; color: var(--text-color); }
         
         .btn-delete { background: var(--error-color); color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: none; }
+        
+        .backup-row { display: flex; gap: 10px; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
+        .btn-outline:hover { background: var(--hover-color); }
 
         .modal-footer { 
             padding: 15px 20px; background: var(--hover-color); 
@@ -238,13 +242,6 @@
         }
 
         .loading-message { text-align: center; color: var(--text-secondary); padding: 40px; }
-
-        .spinner {
-            display:inline-block; width:12px; height:12px; border:2px solid rgba(0,0,0,0.1);
-            border-top-color: var(--secondary-color); border-radius:50%; animation: spin 0.9s linear infinite; margin-right:8px; vertical-align:middle;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         .error-message { 
             text-align: center; color: var(--error-color); padding: 20px; 
             background: rgba(231, 76, 60, 0.1); border-radius: 8px; border: 1px solid var(--error-color);
@@ -309,6 +306,8 @@
                 <label>&nbsp;</label>
                 <button class="btn btn-manage" onclick="openManager()">Manage Feeds</button>
             </div>
+            
+            <input type="file" id="opml-upload" accept=".opml,.xml" style="display:none;">
         </section>
 
         <div class="results-meta" id="results-count"></div>
@@ -328,6 +327,14 @@
         <div class="modal-body">
             
             <div>
+                <div class="section-title">Backup & Restore</div>
+                <div class="backup-row">
+                    <button class="btn btn-outline" onclick="document.getElementById('opml-upload').click()">📂 Import OPML</button>
+                    <button class="btn btn-outline" onclick="exportOPML()">💾 Export OPML</button>
+                </div>
+            </div>
+
+            <div>
                 <div class="section-title">Search Directory (Apple Podcasts)</div>
                 <div class="search-box">
                     <input type="text" id="directory-search-input" placeholder="Search for a podcast (e.g. 'History', 'Tech')...">
@@ -344,38 +351,14 @@
                 </div>
             </div>
 
-            <div>
-                <div class="section-title">Import OPML from URL</div>
-                <div class="search-box">
-                    <input type="url" id="opml-url-input" placeholder="Paste OPML URL (https://...)">
-                    <button class="btn btn-play" onclick="importOPMLFromUrl()">Import OPML</button>
-                </div>
-            </div>
-
-            <div id="opml-import-status" style="display:none; border-top:1px solid var(--border-color); padding-top:10px;">
-                <div class="section-title">OPML Import Status</div>
-                <div id="opml-import-progress" style="color:var(--text-secondary);">
-                    <span id="opml-spinner" class="spinner" style="display:none"></span>
-                    <span id="opml-import-progress-text">Idle</span>
-                </div>
-                <div id="opml-import-summary" style="max-height:160px; overflow:auto; margin-top:8px; color:var(--text-color);"></div>
-            </div>
-
             <div style="flex:1; overflow-y:auto; border-top:1px solid var(--border-color); padding-top:10px;">
                 <div class="section-title">Your Subscriptions (<span id="sub-count">0</span>)</div>
                 <div id="feed-manager-list"></div>
             </div>
         </div>
         <div class="modal-footer">
-            <div style="display:flex; gap:8px; align-items:center;">
-                <button class="btn btn-download" onclick="exportOPML()">📤 Export OPML</button>
-                <button class="btn btn-download" onclick="document.getElementById('opml-upload').click()">📥 Import OPML</button>
-                <input type="file" id="opml-upload" accept=".opml,.xml" style="display:none" />
-            </div>
-            <div>
-                <button class="btn btn-download" style="color: var(--error-color); border-color: var(--error-color);" onclick="resetFeeds()">Reset to Defaults</button>
-                <button class="btn btn-download" onclick="closeManager()">Close</button>
-            </div>
+            <button class="btn btn-download" style="color: var(--error-color); border-color: var(--error-color);" onclick="resetFeeds()">Reset to Defaults</button>
+            <button class="btn btn-download" onclick="closeManager()">Close</button>
         </div>
     </div>
 </div>
@@ -493,11 +476,8 @@
         initFeeds();
         loadLibrary(activeFeeds);
         
-        // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(() => console.log('Service Worker Registered'))
-                .catch(err => console.log('SW Registration Failed', err));
+            navigator.serviceWorker.register('sw.js').catch(() => {});
         }
 
         document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleDateString()}`;
@@ -552,8 +532,6 @@
     
     function closeManager() {
         document.getElementById('manage-modal').classList.remove('active');
-        // Clear search
-        document.getElementById('directory-results').innerHTML = '';
         document.getElementById('directory-results').style.display = 'none';
         document.getElementById('directory-search-input').value = '';
         const oldScript = document.getElementById('itunes-script');
@@ -591,7 +569,58 @@
         populateFilter(allEpisodes);
     }
 
-    // --- FIXED Directory Search (JSONP) ---
+    // --- OPML Import/Export ---
+    
+    // 1. Import
+    document.getElementById('opml-upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(e.target.result, "text/xml");
+                const outlines = doc.querySelectorAll('outline[type="rss"]');
+                let count = 0;
+                outlines.forEach(o => {
+                    const url = o.getAttribute('xmlUrl');
+                    if (url && !activeFeeds.includes(url)) {
+                        activeFeeds.push(url);
+                        count++;
+                    }
+                });
+                
+                if (count > 0) {
+                    saveFeeds();
+                    alert(`Imported ${count} new feeds! Reloading...`);
+                    location.reload();
+                } else {
+                    alert("No new feeds found in this OPML file.");
+                }
+            } catch (err) { alert("Failed to parse OPML file."); }
+        };
+        reader.readAsText(file);
+    });
+
+    // 2. Export
+    function exportOPML() {
+        const opmlHeader = `<?xml version="1.0" encoding="UTF-8"?><opml version="1.0"><head><title>Podcast Feeds</title></head><body>`;
+        const opmlFooter = `</body></opml>`;
+        const outlines = activeFeeds.map(url => {
+            const title = urlToTitle[url] || "Podcast";
+            return `<outline type="rss" text="${escapeHtml(title)}" title="${escapeHtml(title)}" xmlUrl="${escapeHtml(url)}"/>`;
+        }).join('\n');
+        
+        const blob = new Blob([opmlHeader + outlines + opmlFooter], {type: "text/xml"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "podcasts.opml";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // --- Directory Search (JSONP) ---
     function searchDirectory() {
         const term = document.getElementById('directory-search-input').value.trim();
         if (!term) return;
@@ -600,33 +629,23 @@
         resultsDiv.style.display = 'block';
         resultsDiv.innerHTML = '<div style="padding:10px; color:var(--text-secondary);">Searching Apple Podcasts...</div>';
 
-        // Clean up old script
         const oldScript = document.getElementById('itunes-script');
         if (oldScript) oldScript.remove();
 
-        // JSONP script injection
         const script = document.createElement('script');
         script.id = 'itunes-script';
         const safeTerm = encodeURIComponent(term);
         script.src = `https://itunes.apple.com/search?media=podcast&entity=podcast&term=${safeTerm}&limit=15&callback=processItunesResults`;
-        
-        script.onerror = () => {
-             resultsDiv.innerHTML = '<div style="padding:10px; color:var(--error-color);">Network error connecting to Apple.</div>';
-        };
-
         document.body.appendChild(script);
     }
 
-    // Global callback for JSONP
     window.processItunesResults = function(data) {
         const resultsDiv = document.getElementById('directory-results');
         resultsDiv.innerHTML = '';
-
         if (!data || data.resultCount === 0) {
             resultsDiv.innerHTML = '<div style="padding:10px; color:var(--text-secondary);">No results found.</div>';
             return;
         }
-
         data.results.forEach(pod => {
             const el = document.createElement('div');
             el.className = 'directory-item';
@@ -644,10 +663,7 @@
 
     function addFromSearch(url) {
         if (!url) return alert("Error: This podcast has no valid RSS feed.");
-        if (activeFeeds.includes(url)) {
-            alert("You are already subscribed to this feed.");
-            return;
-        }
+        if (activeFeeds.includes(url)) return alert("Already subscribed.");
         document.getElementById('new-feed-input').value = url;
         addNewFeed();
     }
@@ -656,11 +672,7 @@
         const input = document.getElementById('new-feed-input');
         const url = input.value.trim();
         if (!url) return;
-        
-        if (activeFeeds.includes(url)) {
-            alert("This feed is already in your list.");
-            return;
-        }
+        if (activeFeeds.includes(url)) return alert("Already in list.");
 
         const originalBtnText = event.target ? event.target.textContent : "Add";
         if(event.target) event.target.textContent = "Loading...";
@@ -670,7 +682,6 @@
         if (result) {
             activeFeeds.push(url);
             saveFeeds();
-            
             let newEps = [];
             if (result.type === 'xml_string') newEps = parseXML(result.content, url);
             else newEps = parseJSON(result.content, url);
@@ -679,25 +690,19 @@
                 urlToTitle[url] = newEps[0].podcastTitle;
                 allEpisodes = allEpisodes.concat(newEps);
                 sortEpisodes(allEpisodes, document.getElementById('sort-order').value);
-                
                 populateFilter(allEpisodes);
                 applyFilters();
                 renderManagerList();
-                
                 input.value = "";
                 alert(`Subscribed to "${newEps[0].podcastTitle}"`);
-            } else {
-                alert("Feed found, but contained no episodes.");
-            }
-        } else {
-            alert("Could not load feed. Check URL or CORS.");
-        }
+            } else { alert("Feed found, but no episodes."); }
+        } else { alert("Could not load feed. Check URL."); }
         input.disabled = false;
         if(event.target) event.target.textContent = originalBtnText;
     }
 
     function resetFeeds() {
-        if(confirm("This will delete all custom feeds and restore the default list. Are you sure?")) {
+        if(confirm("Delete all custom feeds and restore defaults?")) {
             activeFeeds = [...defaultFeeds];
             saveFeeds();
             location.reload(); 
@@ -728,7 +733,6 @@
             const data = await res.json();
             if (data.status === 'ok') return { content: data, type: 'json_obj' };
         } catch (e) {}
-
         return null; 
     }
 
@@ -761,7 +765,7 @@
 
     async function downloadEpisode(url, filename, btn) {
         const originalText = btn.textContent;
-        btn.textContent = "Downloading...";
+        btn.textContent = "Down...";
         btn.disabled = true;
         try {
             const response = await fetch(url);
@@ -775,11 +779,10 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(blobUrl);
-            btn.textContent = "Saved!";
+            btn.textContent = "Saved";
         } catch (error) {
             window.open(url, '_blank');
-            btn.textContent = "Opened Tab";
-            setStatus("Direct download blocked. Opened in new tab.", "warning", 4000);
+            btn.textContent = "Opened";
         }
         setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 2000);
     }
@@ -805,7 +808,6 @@
                     urlToTitle[url] = newEpisodes[0].podcastTitle;
                     allEpisodes = allEpisodes.concat(newEpisodes);
                     sortEpisodes(allEpisodes, document.getElementById('sort-order').value);
-                    
                     if (isFirstLoad) {
                         episodeListEl.innerHTML = '';
                         isFirstLoad = false;
@@ -818,7 +820,6 @@
         });
 
         await Promise.allSettled(promises);
-        
         if (allEpisodes.length === 0) {
             episodeListEl.innerHTML = '<div class="error-message">Failed to load podcasts.</div>';
             setStatus("Failed to load any podcasts.", 'error');
@@ -958,239 +959,6 @@
     document.getElementById('search-input').addEventListener('input', applyFilters);
     document.getElementById('podcast-filter').addEventListener('change', applyFilters);
     document.getElementById('sort-order').addEventListener('change', applyFilters);
-
-    // OPML Import/Export handlers
-    document.getElementById('opml-upload').addEventListener('change', function (e) { importOPMLFromInput(e); });
-
-    function exportOPML() {
-        const now = new Date().toISOString().slice(0,10);
-        const headTitle = 'Podcasts Subscriptions';
-        const items = activeFeeds.map(url => {
-            const title = escapeXml(urlToTitle[url] || url);
-            return `<outline type="rss" text="${title}" title="${title}" xmlUrl="${escapeXml(url)}"/>`;
-        }).join('\n        ');
-        const opml = `<?xml version="1.0" encoding="UTF-8"?>\n<opml version="1.0">\n  <head>\n    <title>${headTitle}</title>\n    <dateCreated>${new Date().toUTCString()}</dateCreated>\n  </head>\n  <body>\n        ${items}\n  </body>\n</opml>`;
-        const blob = new Blob([opml], { type: 'text/xml' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `podcasts-${now}.opml`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-        setStatus('OPML exported', 'success', 3000);
-    }
-
-    async function importOPMLFromUrl() {
-        const input = document.getElementById('opml-url-input');
-        const url = input.value.trim();
-        if (!url) return alert('Please paste an OPML URL first.');
-        input.disabled = true;
-        showOpmlImportPanel();
-        setOpmlProgress('Fetching OPML...');
-        try {
-            const text = await fetchOPMLWithProxies(url);
-            if (!text) throw new Error('Unable to fetch OPML');
-            const report = await importOPMLWithReport(text, (msg) => setOpmlProgress(msg));
-            finalizeImportReport(report);
-            input.value = '';
-        } catch (e) {
-            const msg = e && e.message ? e.message : 'Failed to fetch/parse OPML';
-            setStatus('OPML import error', 'error', 6000);
-            setOpmlProgress(msg);
-            console.error('OPML import error:', e);
-            alert('OPML import error: ' + msg);
-        }
-        input.disabled = false;
-    }
-
-    function importOPMLFromInput(evt) {
-        const file = evt.target && evt.target.files && evt.target.files[0];
-        if (!file) return;
-        showOpmlImportPanel();
-        setOpmlProgress('Reading file...');
-        const reader = new FileReader();
-        reader.onload = async () => {
-            const text = reader.result;
-            try {
-                const report = await importOPMLWithReport(text, (msg) => setOpmlProgress(msg));
-                finalizeImportReport(report);
-            } catch (e) {
-                const msg = e && e.message ? e.message : 'Failed to parse OPML';
-                setStatus('OPML parse error', 'error', 6000);
-                setOpmlProgress(msg);
-                console.error('OPML parse error:', e);
-                alert('OPML parse error: ' + msg);
-            }
-            evt.target.value = '';
-        };
-        reader.readAsText(file);
-    }
-
-    async function fetchOPMLWithProxies(url) {
-        // Try direct fetch first
-        try {
-            const res = await fetchWithTimeout(url, 8000);
-            if (res.ok) return await res.text();
-        } catch (e) {}
-
-        // Try corsproxy.io
-        try {
-            const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-            const res = await fetchWithTimeout(proxy, 8000);
-            if (res.ok) return await res.text();
-        } catch (e) {}
-
-        // Try allorigins
-        try {
-            const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-            const res = await fetchWithTimeout(proxy, 8000);
-            const data = await res.json();
-            if (data && data.contents) return data.contents;
-        } catch (e) {}
-
-        // Give up
-        return null;
-    }
-
-    function extractOpmlUrlsFromText(text) {
-        const urls = new Set();
-        let m;
-        const dbl = /xmlUrl\s*=\s*"([^"]+)"/ig;
-        while ((m = dbl.exec(text))) urls.add(m[1].trim());
-        const sgl = /xmlUrl\s*=\s*'([^']+)'/ig;
-        while ((m = sgl.exec(text))) urls.add(m[1].trim());
-        const urlDbl = /url\s*=\s*"([^"]+)"/ig;
-        while ((m = urlDbl.exec(text))) {
-            const u = m[1].trim(); if (/^https?:\/\//i.test(u)) urls.add(u);
-        }
-        const urlSgl = /url\s*=\s*'([^']+)'/ig;
-        while ((m = urlSgl.exec(text))) {
-            const u = m[1].trim(); if (/^https?:\/\//i.test(u)) urls.add(u);
-        }
-        return Array.from(urls);
-    }
-
-    async function importOPMLWithReport(text, progressCb) {
-        progressCb = progressCb || (() => {});
-        const parser = new DOMParser();
-
-        // Try parsing as XML and detect parser errors
-        let xml = parser.parseFromString(text, 'application/xml');
-        const hasParserError = !!(xml.querySelector && (xml.querySelector('parsererror') || xml.getElementsByTagName('parsererror').length));
-
-        if (hasParserError) {
-            console.warn('OPML parse error detected, attempting cleanup and re-parse.');
-            // Strip BOM and problematic control characters then retry
-            const cleaned = String(text).replace(/^\uFEFF/, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
-            xml = parser.parseFromString(cleaned, 'application/xml');
-            if (xml.querySelector && (xml.querySelector('parsererror') || xml.getElementsByTagName('parsererror').length)) {
-                console.warn('Cleanup did not fix parse error. Falling back to regex extraction.');
-                const urls = extractOpmlUrlsFromText(cleaned);
-                if (urls.length === 0) throw new Error('No feeds found (parsing failed, and fallback found none).');
-
-                // Build outlines from urls for downstream processing
-                const outlines = urls.map(u => ({ url: u, title: '' }));
-                return await processOutlinesWithReport(outlines, progressCb);
-            }
-        }
-
-        // If parsing succeeded, traverse DOM to collect outlines
-        const outlines = [];
-        function traverse(node) {
-            const children = Array.from(node.children || []);
-            children.forEach(child => {
-                if (child.tagName && child.tagName.toLowerCase() === 'outline') {
-                    const url = child.getAttribute('xmlUrl') || child.getAttribute('url');
-                    if (url) outlines.push({url, title: child.getAttribute('title') || child.getAttribute('text') || ''});
-                    // Recurse in case of grouped outlines
-                    traverse(child);
-                } else {
-                    // Recurse regardless (some OPMLs use nested groups differently)
-                    traverse(child);
-                }
-            });
-        }
-        traverse(xml);
-
-        if (outlines.length === 0) {
-            // As a last resort use regex extractor on text
-            const fallback = extractOpmlUrlsFromText(text);
-            if (fallback.length === 0) throw new Error('No feeds found');
-            const outlinesFromFallback = fallback.map(u => ({ url: u, title: '' }));
-            return await processOutlinesWithReport(outlinesFromFallback, progressCb);
-        }
-
-        return await processOutlinesWithReport(outlines, progressCb);
-    }
-
-    async function processOutlinesWithReport(outlines, progressCb) {
-        const report = { total: outlines.length, added: [], skipped: [], malformed: [] };
-        for (let i = 0; i < outlines.length; i++) {
-            const o = outlines[i];
-            progressCb(`Processing ${i+1}/${outlines.length} — added ${report.added.length}, skipped ${report.skipped.length}, malformed ${report.malformed.length}`);
-            await new Promise(r => setTimeout(r, 50)); // small pause to allow UI updates
-            let url = (o.url || o.url) ? (o.url || '').trim() : '';
-            try {
-                // Basic validation
-                const parsed = new URL(url);
-                url = parsed.href;
-            } catch (e) {
-                report.malformed.push(o);
-                continue;
-            }
-            if (activeFeeds.includes(url)) {
-                report.skipped.push(url);
-            } else {
-                activeFeeds.push(url);
-                report.added.push(url);
-            }
-        }
-        // Persist and reload
-        if (report.added.length > 0) {
-            saveFeeds();
-            await loadLibrary(activeFeeds);
-            renderManagerList();
-        }
-        return report;
-    }
-
-    function finalizeImportReport(report) {
-        setOpmlProgress(`Done — ${report.added.length} added, ${report.skipped.length} skipped, ${report.malformed.length} malformed.`);
-        setStatus(`Imported ${report.added.length} feeds`, report.added.length > 0 ? 'success' : 'info', 4000);
-        showImportSummary(report);
-    }
-
-    function showImportSummary(report) {
-        const summaryEl = document.getElementById('opml-import-summary');
-        const parts = [];
-        parts.push(`<div><strong>Added:</strong> ${report.added.length}</div>`);
-        if (report.added.length) parts.push(`<ul>${report.added.map(u => `<li><a href="${u}" target="_blank">${escapeHtml(u)}</a></li>`).join('')}</ul>`);
-        parts.push(`<div><strong>Skipped (already present):</strong> ${report.skipped.length}</div>`);
-        if (report.skipped.length) parts.push(`<ul>${report.skipped.map(u => `<li>${escapeHtml(u)}</li>`).join('')}</ul>`);
-        parts.push(`<div><strong>Malformed:</strong> ${report.malformed.length}</div>`);
-        if (report.malformed.length) parts.push(`<ul>${report.malformed.map(o => `<li>${escapeHtml(o.title||'')}: ${escapeHtml(o.url||'')}</li>`).join('')}</ul>`);
-        summaryEl.innerHTML = parts.join('');
-    }
-
-    function showOpmlImportPanel() {
-        document.getElementById('opml-import-status').style.display = 'block';
-        document.getElementById('opml-import-summary').innerHTML = '';
-    }
-    function setOpmlProgress(msg) {
-        const spinner = document.getElementById('opml-spinner');
-        const text = document.getElementById('opml-import-progress-text');
-        if (text) text.textContent = msg;
-        if (spinner) {
-            if (/Processing|Fetching|Reading/i.test(msg)) spinner.style.display = 'inline-block';
-            else spinner.style.display = 'none';
-        }
-    }
-
-    function escapeXml(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-    }
 </script>
 </body>
 </html>
