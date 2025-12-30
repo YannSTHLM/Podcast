@@ -243,6 +243,12 @@
             display:inline-block; width:12px; height:12px; border:2px solid rgba(0,0,0,0.1);
             border-top-color: var(--secondary-color); border-radius:50%; animation: spin 0.9s linear infinite; margin-right:8px; vertical-align:middle;
         }
+        #install-btn { display: none; }
+        @media (max-width: 600px) {
+            .action-row { width: 100%; }
+            .btn { flex: 1; }
+            #install-btn { margin-top:8px; }
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .error-message { 
@@ -262,6 +268,7 @@
 <div class="container">
     <header>
         <button class="theme-toggle" id="theme-toggle" title="Toggle Dark Mode">🌙</button>
+        <button class="btn btn-download" id="install-btn" style="display:none; margin-left:8px;">Install App</button>
         <h1>Podcasts</h1>
         <p>Curated episodes from around the web</p>
         <div class="last-updated" id="last-updated"></div>
@@ -370,12 +377,29 @@
             <div style="display:flex; gap:8px; align-items:center;">
                 <button class="btn btn-download" onclick="exportOPML()">📤 Export OPML</button>
                 <button class="btn btn-download" onclick="document.getElementById('opml-upload').click()">📥 Import OPML</button>
+                <button class="btn btn-play" onclick="triggerInstall()">📱 Install App</button>
                 <input type="file" id="opml-upload" accept=".opml,.xml" style="display:none" />
             </div>
             <div>
                 <button class="btn btn-download" style="color: var(--error-color); border-color: var(--error-color);" onclick="resetFeeds()">Reset to Defaults</button>
                 <button class="btn btn-download" onclick="closeManager()">Close</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="install-instructions-modal" aria-hidden="true">
+    <div class="modal-content" style="max-width:420px; max-height:320px;">
+        <div class="modal-header">
+            <h2>Install as Web App</h2>
+            <button class="close-btn" onclick="document.getElementById('install-instructions-modal').classList.remove('active')">×</button>
+        </div>
+        <div class="modal-body">
+            <div style="font-size:0.95rem; color:var(--text-color);">
+                <p>On iOS/Safari, use the <strong>Share</strong> button and select <strong>Add to Home Screen</strong> to install this app.</p>
+                <p>If you are using another browser, follow its install prompt or use the browser menu to "Install" or "Add to Home screen".</p>
+            </div>
+            <div style="margin-top:12px; text-align:right;"><button class="btn btn-download" onclick="document.getElementById('install-instructions-modal').classList.remove('active')">Close</button></div>
         </div>
     </div>
 </div>
@@ -1191,6 +1215,64 @@
         if (!str) return '';
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
     }
+
+    // --- PWA Install Helpers ---
+    let deferredInstallPrompt = null;
+    const installBtnEl = document.getElementById('install-btn');
+
+    function isIos() { return /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase()); }
+    function isInStandaloneMode() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        if (!isInStandaloneMode()) {
+            installBtnEl.style.display = 'inline-block';
+        }
+    });
+
+    installBtnEl.addEventListener('click', async () => {
+        if (isIos()) {
+            document.getElementById('install-instructions-modal').classList.add('active');
+            return;
+        }
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            const choice = await deferredInstallPrompt.userChoice;
+            if (choice && choice.outcome === 'accepted') {
+                setStatus('App installed', 'success', 4000);
+                installBtnEl.style.display = 'none';
+            } else {
+                setStatus('Install dismissed', 'info', 3000);
+            }
+            deferredInstallPrompt = null;
+        } else {
+            // Fallback: show instructions
+            document.getElementById('install-instructions-modal').classList.add('active');
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        setStatus('App installed', 'success', 4000);
+        if (installBtnEl) installBtnEl.style.display = 'none';
+        document.getElementById('install-instructions-modal').classList.remove('active');
+    });
+
+    // If already installed (standalone), hide button
+    if (isInStandaloneMode()) {
+        if (installBtnEl) installBtnEl.style.display = 'none';
+    }
+
+    // Helper used by Manage modal to trigger install flow
+    function triggerInstall() {
+        if (installBtnEl) {
+            installBtnEl.click();
+            return;
+        }
+        // Fallback: show instructions
+        document.getElementById('install-instructions-modal').classList.add('active');
+    }
+
 </script>
 </body>
 </html>
