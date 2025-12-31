@@ -78,11 +78,7 @@ jobs:
           npx lighthouse-badges -u "https://yannsthlm.github.io/Podcast/" -o badges/ || true
           if [ -f badges/lighthouse_performance.svg ]; then
             git fetch origin pwa-gen-icons || true
-            if git show-ref --verify --quiet refs/remotes/origin/pwa-gen-icons; then
-              git checkout -b pwa-gen-icons origin/pwa-gen-icons
-            else
-              git checkout -b pwa-gen-icons
-            fi
+            git checkout -b pwa-gen-icons --track origin/pwa-gen-icons 2>/dev/null || git checkout -b pwa-gen-icons 2>/dev/null || git checkout pwa-gen-icons
             git add badges/*.svg || true
             git commit -m "chore(pwa): update lighthouse badges" || echo "no changes to commit"
             if [ -n "$PERSONAL_TOKEN" ]; then
