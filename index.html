@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Podcasts</title>
     
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#2c3e50">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -379,7 +379,8 @@
                 <div style="color:var(--text-secondary); margin-bottom:8px;">Installable PWA with offline caching and shortcuts. Use the button to install, or follow the iOS instructions.</div>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <button class="btn btn-play" onclick="triggerInstall()">Install App</button>
-                    <div id="webapp-info" style="color:var(--text-secondary); font-size:0.9rem;"></div>
+                    <div id="webapp-info" style="color:var(--text-secondary); font-size:0.9rem;">Status: <span id="sw-status">Checking...</span></div>
+                    <button class="btn btn-download" onclick="clearAppCache()" title="Clear cached assets">Clear Cache</button>
                 </div>
             </div>
 
@@ -534,9 +535,33 @@
         
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(() => console.log('Service Worker Registered'))
-                .catch(err => console.log('SW Registration Failed', err));
+            navigator.serviceWorker.register('/service-worker.js')
+                .then((reg) => {
+                    console.log('Service Worker Registered', reg);
+                    updateSwStatus('Registered');
+                    listenForSwUpdates(reg);
+                })
+                .catch(err => { console.log('SW Registration Failed', err); updateSwStatus('Registration Failed'); });
+        }
+
+        function updateSwStatus(msg) {
+            const el = document.getElementById('sw-status'); if (el) el.textContent = msg;
+        }
+
+        async function clearAppCache() {
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                setStatus('Cache cleared', 'success', 3000);
+                updateSwStatus('Cache cleared');
+            } catch (e) { console.error(e); setStatus('Failed to clear cache', 'error', 4000); }
+        }
+
+        function listenForSwUpdates(reg) {
+            if (!reg) return;
+            if (reg.waiting) updateSwStatus('Update ready');
+            reg.addEventListener('updatefound', () => updateSwStatus('Update found'));
+            navigator.serviceWorker.addEventListener('controllerchange', () => updateSwStatus('Activated'));
         }
 
         document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleDateString()}`;
