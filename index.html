@@ -274,22 +274,27 @@
         <button class="btn btn-download" id="install-btn" style="display:none; margin-left:8px;">Install App</button>
         <h1>Podcasts</h1>
         <p>Curated episodes from around the web</p>
-            <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:6px; flex-wrap: wrap;">
-                <div class="last-updated" id="last-updated"></div>
-                <div id="online-status" title="Network status" style="font-size:0.85rem; color:var(--text-secondary);">● <span id="online-text">Online</span></div>
-                <button class="btn btn-download" onclick="document.getElementById('download-app-section').scrollIntoView({behavior:'smooth'}); updateInstallUI();" style="font-size: 0.8rem; padding: 6px 12px;">📲 Download App</button>
-            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 200px;">
-                    <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 4px;">📱 Download as Web App</div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Install this podcast player on your device for offline access and a native app experience.</div>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-download" id="download-app-btn" style="white-space: nowrap;">Download App</button>
-                    <button class="btn btn-download" onclick="document.getElementById('install-instructions-modal').classList.add('active')" style="white-space: nowrap;">How to Install</button>
-                </div>
+        <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:6px; flex-wrap: wrap;">
+            <div class="last-updated" id="last-updated"></div>
+            <div id="online-status" title="Network status" style="font-size:0.85rem; color:var(--text-secondary);">● <span id="online-text">Online</span></div>
+            <button class="btn btn-download" id="header-download-btn" style="font-size: 0.8rem; padding: 6px 12px; display: none;">📲 Download App</button>
+        </div>
+    </header>
+
+    <!-- Download App Section -->
+    <section id="download-app-section" style="background: var(--card-background); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: 0 4px 12px var(--shadow); margin-bottom: 20px; display: none;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 4px;">📱 Download as Web App</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Install this podcast player on your device for offline access and a native app experience.</div>
             </div>
-            <div id="install-hint" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; display: none;"></div>
-        </section>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-download" id="download-app-btn" style="white-space: nowrap;">Download App</button>
+                <button class="btn btn-download" onclick="document.getElementById('install-instructions-modal').classList.add('active')" style="white-space: nowrap;">How to Install</button>
+            </div>
+        </div>
+        <div id="install-hint" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; display: none;"></div>
+    </section>
                 <p class="now-playing-meta" id="now-playing-meta"></p>
             </div>
             <audio id="audio-player" controls preload="none">
@@ -1277,6 +1282,7 @@
     let deferredInstallPrompt = null;
     const installBtnEl = document.getElementById('install-btn');
     const downloadAppBtn = document.getElementById('download-app-btn');
+    const headerDownloadBtn = document.getElementById('header-download-btn');
     const installHint = document.getElementById('install-hint');
     const downloadSection = document.getElementById('download-app-section');
 
@@ -1284,16 +1290,17 @@
     function isAndroid() { return /android/.test(navigator.userAgent.toLowerCase()); }
     function isInStandaloneMode() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
 
-    // Show download section and update hint based on device
+    // Show/hide download UI based on install availability
     function updateInstallUI() {
         if (isInStandaloneMode()) {
             // Already installed - hide everything
             if (downloadSection) downloadSection.style.display = 'none';
             if (installBtnEl) installBtnEl.style.display = 'none';
+            if (headerDownloadBtn) headerDownloadBtn.style.display = 'none';
             return;
         }
         
-        // Show download section
+        // Show download section (will be updated by beforeinstallprompt if available)
         if (downloadSection) downloadSection.style.display = 'block';
         
         // Update hint text
@@ -1314,16 +1321,18 @@
         deferredInstallPrompt = e;
         if (!isInStandaloneMode()) {
             // Show header button
-            installBtnEl.style.display = 'inline-block';
-            // Update download button
+            if (installBtnEl) installBtnEl.style.display = 'inline-block';
+            if (headerDownloadBtn) {
+                headerDownloadBtn.style.display = 'inline-block';
+                headerDownloadBtn.textContent = '📲 Install Now';
+            }
+            // Update download section button
             if (downloadAppBtn) {
                 downloadAppBtn.textContent = 'Install Now';
                 downloadAppBtn.style.backgroundColor = 'var(--success-color)';
                 downloadAppBtn.style.color = '#fff';
                 downloadAppBtn.style.fontWeight = '600';
             }
-            // Show section
-            updateInstallUI();
         }
     });
 
@@ -1343,23 +1352,31 @@
             const choice = await deferredInstallPrompt.userChoice;
             if (choice && choice.outcome === 'accepted') {
                 setStatus('App installed successfully!', 'success', 4000);
-                // Will be hidden by appinstalled event
             } else {
                 setStatus('Install dismissed', 'info', 3000);
             }
             deferredInstallPrompt = null;
         } else {
-            // No install prompt available - show instructions
             document.getElementById('install-instructions-modal').classList.add('active');
         }
     }
 
-    // Header install button
+    // Header download button - scroll to section
+    if (headerDownloadBtn) {
+        headerDownloadBtn.addEventListener('click', () => {
+            if (downloadSection) {
+                downloadSection.scrollIntoView({behavior: 'smooth'});
+            }
+            handleInstall();
+        });
+    }
+
+    // Header install button (hidden, shown when install available)
     if (installBtnEl) {
         installBtnEl.addEventListener('click', handleInstall);
     }
 
-    // Download app button
+    // Download section button
     if (downloadAppBtn) {
         downloadAppBtn.addEventListener('click', handleInstall);
     }
@@ -1367,6 +1384,7 @@
     window.addEventListener('appinstalled', () => {
         setStatus('App installed successfully!', 'success', 4000);
         if (installBtnEl) installBtnEl.style.display = 'none';
+        if (headerDownloadBtn) headerDownloadBtn.style.display = 'none';
         if (downloadSection) downloadSection.style.display = 'none';
         document.getElementById('install-instructions-modal').classList.remove('active');
     });
