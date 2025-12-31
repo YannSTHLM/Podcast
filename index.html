@@ -271,7 +271,6 @@
 <div class="container">
     <header>
         <button class="theme-toggle" id="theme-toggle" title="Toggle Dark Mode">🌙</button>
-        <button class="btn btn-download" id="install-btn" style="display:none; margin-left:8px;">Install App</button>
         <h1>Podcasts</h1>
         <p>Curated episodes from around the web</p>
         <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:6px; flex-wrap: wrap;">
@@ -1280,7 +1279,6 @@
 
     // --- PWA Install Helpers ---
     let deferredInstallPrompt = null;
-    const installBtnEl = document.getElementById('install-btn');
     const downloadAppBtn = document.getElementById('download-app-btn');
     const headerDownloadBtn = document.getElementById('header-download-btn');
     const installHint = document.getElementById('install-hint');
@@ -1295,7 +1293,6 @@
         if (isInStandaloneMode()) {
             // Already installed - hide everything
             if (downloadSection) downloadSection.style.display = 'none';
-            if (installBtnEl) installBtnEl.style.display = 'none';
             if (headerDownloadBtn) headerDownloadBtn.style.display = 'none';
             return;
         }
@@ -1321,7 +1318,6 @@
         deferredInstallPrompt = e;
         if (!isInStandaloneMode()) {
             // Show header button
-            if (installBtnEl) installBtnEl.style.display = 'inline-block';
             if (headerDownloadBtn) {
                 headerDownloadBtn.style.display = 'inline-block';
                 headerDownloadBtn.textContent = '📲 Install Now';
@@ -1361,19 +1357,9 @@
         }
     }
 
-    // Header download button - scroll to section
+    // Header download button
     if (headerDownloadBtn) {
-        headerDownloadBtn.addEventListener('click', () => {
-            if (downloadSection) {
-                downloadSection.scrollIntoView({behavior: 'smooth'});
-            }
-            handleInstall();
-        });
-    }
-
-    // Header install button (hidden, shown when install available)
-    if (installBtnEl) {
-        installBtnEl.addEventListener('click', handleInstall);
+        headerDownloadBtn.addEventListener('click', handleInstall);
     }
 
     // Download section button
@@ -1383,7 +1369,6 @@
 
     window.addEventListener('appinstalled', () => {
         setStatus('App installed successfully!', 'success', 4000);
-        if (installBtnEl) installBtnEl.style.display = 'none';
         if (headerDownloadBtn) headerDownloadBtn.style.display = 'none';
         if (downloadSection) downloadSection.style.display = 'none';
         document.getElementById('install-instructions-modal').classList.remove('active');
