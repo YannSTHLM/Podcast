@@ -77,6 +77,8 @@ jobs:
           mkdir -p badges
           npx lighthouse-badges -u "https://yannsthlm.github.io/Podcast/" -o badges/ || true
           if [ -f badges/lighthouse_performance.svg ]; then
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git fetch origin pwa-gen-icons || true
             git checkout -b pwa-gen-icons --track origin/pwa-gen-icons 2>/dev/null || git checkout -b pwa-gen-icons 2>/dev/null || git checkout pwa-gen-icons
             git add badges/*.svg || true
