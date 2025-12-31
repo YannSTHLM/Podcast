@@ -31,6 +31,16 @@ jobs:
         run: |
           git add assets/icons/icon-192.png assets/icons/icon-512.png || true
 
+      - name: Commit and push generated icons (uses GITHUB_TOKEN)
+        run: |
+          if git diff --quiet --cached; then
+            echo "No generated icons to commit"
+          else
+            git -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" commit -m "chore(pwa): generate PNG icons from SVG"
+            git push --force-with-lease origin HEAD:pwa-gen-icons || echo "Push failed (likely GITHUB_TOKEN limited)"
+          fi
+        continue-on-error: true
+
       - name: Check PERSONAL_TOKEN
         env:
           PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
@@ -41,10 +51,9 @@ jobs:
             echo "PERSONAL_TOKEN present; CI will attempt to create PRs and push badge."
           fi
 
-      - name: Create PR with generated icons (requires PERSONAL_TOKEN)
+      - name: Create PR with generated icons (uses GITHUB_TOKEN by default)
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.PERSONAL_TOKEN }}
           branch: pwa-gen-icons
           commit-message: "chore(pwa): generate PNG icons from SVG"
           title: "chore(pwa): generate PNG icons from SVG"
