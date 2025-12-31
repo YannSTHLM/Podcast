@@ -66,8 +66,8 @@ jobs:
         uses: treosh/lighthouse-ci-action@v9
         with:
           urls: 'https://yannsthlm.github.io/Podcast/'
-          lhci_version: '0.10.0'
-          output: 'html'
+          runs: 1
+          artifactName: lighthouse-results
 
       - name: Generate Lighthouse badge and push to PR branch (uses PERSONAL_TOKEN if present)
         env:
@@ -75,7 +75,7 @@ jobs:
         run: |
           npm install -g lighthouse-badges || true
           mkdir -p badges
-          npx lighthouse-badges -s ./.lighthouseci/reports -o badges/pwa-badge.svg || true
+            npx lighthouse-badges -u "https://yannsthlm.github.io/Podcast/" -o badges/pwa-badge.svg || true
           if [ -f badges/pwa-badge.svg ]; then
             git fetch origin pwa-gen-icons || true
             if git show-ref --verify --quiet refs/remotes/origin/pwa-gen-icons; then
@@ -99,4 +99,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-reports
-          path: ./.lighthouseci/reports
+          path: ./.lighthouseci/**
