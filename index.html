@@ -278,20 +278,26 @@
         </div>
     </header>
 
-    <!-- Download App Section -->
-    <section id="download-app-section" style="background: var(--card-background); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: 0 4px 12px var(--shadow); margin-bottom: 20px; display: none;">
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
-                <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 4px;">📱 Download as Web App</div>
-                <div style="font-size: 0.85rem; color: var(--text-secondary);">Install this podcast player on your device for offline access and a native app experience.</div>
+    <main>
+        <!-- Download App Section -->
+        <section id="download-app-section" style="background: var(--card-background); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: 0 4px 12px var(--shadow); margin-bottom: 20px; display: none;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 4px;">📱 Download as Web App</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Install this podcast player on your device for offline access and a native app experience.</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-download" id="download-app-btn" style="white-space: nowrap;">Download App</button>
+                    <button class="btn btn-download" onclick="document.getElementById('install-instructions-modal').classList.add('active')" style="white-space: nowrap;">How to Install</button>
+                </div>
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn btn-download" id="download-app-btn" style="white-space: nowrap;">Download App</button>
-                <button class="btn btn-download" onclick="document.getElementById('install-instructions-modal').classList.add('active')" style="white-space: nowrap;">How to Install</button>
-            </div>
-        </div>
-        <div id="install-hint" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; display: none;"></div>
-    </section>
+            <div id="install-hint" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; display: none;"></div>
+        </section>
+
+        <section id="player-section">
+            <div id="now-playing">
+                <h2 id="now-playing-title">Select an episode</h2>
+                <div id="now-playing-description">Click 'Play' on any episode below to start listening.</div>
                 <p class="now-playing-meta" id="now-playing-meta"></p>
             </div>
             <audio id="audio-player" controls preload="none">
