@@ -177,6 +177,11 @@
             background-color: var(--card-background); color: var(--text-color); border: 1px solid var(--border-color); 
         }
         .btn-download:hover { background-color: var(--hover-color); }
+        
+        .btn-secondary {
+            background-color: transparent; color: var(--primary-color); border: 1px solid var(--primary-color);
+        }
+        .btn-secondary:hover { background-color: var(--primary-color); color: #fff; }
 
         .btn-manage { background-color: var(--primary-color); color: var(--card-background); margin-top: 23px; width: 100%; }
 
@@ -288,10 +293,13 @@
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button class="btn btn-download" id="download-app-btn" style="white-space: nowrap;">Download App</button>
-                    <button class="btn btn-download" onclick="document.getElementById('install-instructions-modal').classList.add('active')" style="white-space: nowrap;">How to Install</button>
+                    <button class="btn btn-secondary" id="how-to-install-btn" style="white-space: nowrap;">How to Install</button>
                 </div>
             </div>
             <div id="install-hint" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; display: none;"></div>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 8px; opacity: 0.7;">
+            💡 Note: If your browser supports PWA installation, a "📲 Install Now" button will appear in the header after you interact with the page.
+        </div>
         </section>
 
         <section id="player-section">
@@ -553,7 +561,7 @@
     const statusText = document.getElementById('status-text');
 
     // -- Initialization --
-    document.addEventListener('DOMContentLoaded', () => {
+    function initializeApp() {
         initTheme();
         initFeeds();
         loadLibrary(activeFeeds);
@@ -568,8 +576,15 @@
                 })
                 .catch(err => { console.log('SW Registration Failed', err); updateSwStatus('Registration Failed'); });
         }
+    }
 
-        function updateSwStatus(msg) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+        initializeApp();
+    }
+
+    function updateSwStatus(msg) {
             const el = document.getElementById('sw-status'); if (el) el.textContent = msg;
         }
 
@@ -795,29 +810,48 @@
 
     // --- Fetch & Core Logic ---
     async function fetchRSS(url) {
+        console.log(`Fetching RSS: ${url}`);
+        
+        // Try corsproxy.io first
         try {
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
             const res = await fetchWithTimeout(proxyUrl, 8000);
             if (res.ok) {
                 const text = await res.text();
+                console.log(`✓ Success with corsproxy.io for ${url}`);
                 return { content: text, type: 'xml_string' };
             }
-        } catch (e) {}
+        } catch (e) {
+            console.log(`✗ corsproxy.io failed for ${url}:`, e.message);
+        }
 
+        // Try allorigins.win second
         try {
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
             const res = await fetchWithTimeout(proxyUrl, 8000);
             const data = await res.json();
-            if (data.contents) return { content: data.contents, type: 'xml_string' };
-        } catch (e) {}
+            if (data.contents) {
+                console.log(`✓ Success with allorigins.win for ${url}`);
+                return { content: data.contents, type: 'xml_string' };
+            }
+        } catch (e) {
+            console.log(`✗ allorigins.win failed for ${url}:`, e.message);
+        }
         
+        // Try rss2json.com third
         try {
             const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
             const res = await fetchWithTimeout(proxyUrl, 5000);
             const data = await res.json();
-            if (data.status === 'ok') return { content: data, type: 'json_obj' };
-        } catch (e) {}
+            if (data.status === 'ok') {
+                console.log(`✓ Success with rss2json.com for ${url}`);
+                return { content: data, type: 'json_obj' };
+            }
+        } catch (e) {
+            console.log(`✗ rss2json.com failed for ${url}:`, e.message);
+        }
 
+        console.log(`✗ All proxies failed for ${url}`);
         return null; 
     }
 
@@ -875,44 +909,66 @@
 
     // --- Data Loading ---
     async function loadLibrary(feeds) {
-        setStatus("Fetching podcasts...", 'info');
+        if (!feeds || feeds.length === 0) {
+            episodeListEl.innerHTML = '<div class="error-message">No feeds configured. Please add some podcasts.</div>';
+            setStatus("No feeds configured.", 'info');
+            return;
+        }
+
+        setStatus(`Fetching ${feeds.length} podcasts...`, 'info');
         episodeListEl.innerHTML = '<div class="loading-message">Loading feeds...</div>';
         
         allEpisodes = [];
         let successCount = 0;
+        let failCount = 0;
         let isFirstLoad = true;
 
         const promises = feeds.map(async (url) => {
-            const result = await fetchRSS(url);
-            if (result) {
-                let newEpisodes = [];
-                if (result.type === 'xml_string') newEpisodes = parseXML(result.content, url);
-                else if (result.type === 'json_obj') newEpisodes = parseJSON(result.content, url);
+            try {
+                const result = await fetchRSS(url);
+                if (result) {
+                    let newEpisodes = [];
+                    if (result.type === 'xml_string') newEpisodes = parseXML(result.content, url);
+                    else if (result.type === 'json_obj') newEpisodes = parseJSON(result.content, url);
 
-                if (newEpisodes.length > 0) {
-                    successCount++;
-                    urlToTitle[url] = newEpisodes[0].podcastTitle;
-                    allEpisodes = allEpisodes.concat(newEpisodes);
-                    sortEpisodes(allEpisodes, document.getElementById('sort-order').value);
-                    
-                    if (isFirstLoad) {
-                        episodeListEl.innerHTML = '';
-                        isFirstLoad = false;
+                    if (newEpisodes.length > 0) {
+                        successCount++;
+                        urlToTitle[url] = newEpisodes[0].podcastTitle;
+                        allEpisodes = allEpisodes.concat(newEpisodes);
+                        sortEpisodes(allEpisodes, document.getElementById('sort-order').value);
+                        
+                        if (isFirstLoad) {
+                            episodeListEl.innerHTML = '';
+                            isFirstLoad = false;
+                        }
+                        populateFilter(allEpisodes);
+                        applyFilters();
+                        setStatus(`Loaded ${successCount} feeds...`, 'info');
+                    } else {
+                        urlToTitle[url] = "Empty Feed";
+                        failCount++;
                     }
-                    populateFilter(allEpisodes);
-                    applyFilters();
-                    setStatus(`Loaded ${successCount} feeds...`, 'info');
-                } else { urlToTitle[url] = "Empty Feed"; }
-            } else { urlToTitle[url] = "Failed to Load"; }
+                } else {
+                    urlToTitle[url] = "Failed to Load";
+                    failCount++;
+                }
+            } catch (e) {
+                console.error(`Error loading feed ${url}:`, e);
+                urlToTitle[url] = "Error";
+                failCount++;
+            }
         });
 
         await Promise.allSettled(promises);
         
         if (allEpisodes.length === 0) {
-            episodeListEl.innerHTML = '<div class="error-message">Failed to load podcasts.</div>';
-            setStatus("Failed to load any podcasts.", 'error');
+            episodeListEl.innerHTML = `<div class="error-message">
+                <p>Failed to load podcasts.</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">${failCount} feeds failed. Check console for details.</p>
+            </div>`;
+            setStatus(`Failed to load any podcasts (${failCount} errors).`, 'error');
         } else {
-            setStatus(`Done! Loaded ${allEpisodes.length} episodes.`, 'success', 5000);
+            setStatus(`Done! Loaded ${allEpisodes.length} episodes from ${successCount} feeds.`, 'success', 5000);
         }
     }
 
@@ -1318,6 +1374,7 @@
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('beforeinstallprompt event fired - PWA install available');
         e.preventDefault();
         deferredInstallPrompt = e;
         if (!isInStandaloneMode()) {
@@ -1329,6 +1386,17 @@
             if (downloadSection) downloadSection.style.display = 'none';
         }
     });
+
+    // Debug: Log if beforeinstallprompt doesn't fire
+    setTimeout(() => {
+        if (!deferredInstallPrompt && !isInStandaloneMode()) {
+            console.log('Note: beforeinstallprompt event did not fire. This is normal if:');
+            console.log('1. Site is not served over HTTPS');
+            console.log('2. App is already installed');
+            console.log('3. Browser does not support PWA installation');
+            console.log('4. User has not interacted with the page yet');
+        }
+    }, 3000);
 
     async function handleInstall() {
         if (isInStandaloneMode()) {
@@ -1363,6 +1431,14 @@
     // Download section button
     if (downloadAppBtn) {
         downloadAppBtn.addEventListener('click', handleInstall);
+    }
+
+    // How to Install button - just shows instructions
+    const howToInstallBtn = document.getElementById('how-to-install-btn');
+    if (howToInstallBtn) {
+        howToInstallBtn.addEventListener('click', () => {
+            document.getElementById('install-instructions-modal').classList.add('active');
+        });
     }
 
     window.addEventListener('appinstalled', () => {
