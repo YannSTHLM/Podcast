@@ -1,18 +1,16 @@
 name: PWA CI
 
 on:
+  push:
+    branches: [ main ]
+
 permissions:
   contents: write
   pull-requests: write
-  push:
-    branches: [ main ]
 
 jobs:
   pwa:
     runs-on: ubuntu-latest
-permissions:
-  contents: write
-  pull-requests: write
 
     steps:
       - name: Checkout
@@ -33,10 +31,11 @@ permissions:
         run: |
           git add assets/icons/icon-192.png assets/icons/icon-512.png || true
 
-      - name: Create PR with generated icons
+      - name: Create PR with generated icons (requires PERSONAL_TOKEN)
+        if: secrets.PERSONAL_TOKEN != ''
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PERSONAL_TOKEN }}
           branch: pwa-gen-icons
           commit-message: "chore(pwa): generate PNG icons from SVG"
           title: "chore(pwa): generate PNG icons from SVG"
@@ -44,17 +43,20 @@ permissions:
           base: main
           labels: automated, pwa
 
+      - name: Warn about missing PERSONAL_TOKEN
+        if: secrets.PERSONAL_TOKEN == ''
+        run: |
+          echo "PERSONAL_TOKEN secret not found; skipping automatic PR creation. To enable automated PRs, add a personal access token (repo scope) as the repository secret PERSONAL_TOKEN."
+
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v9
         with:
           urls: 'https://yannsthlm.github.io/Podcast/'
           lhci_version: '0.10.0'
-permissions:
-  contents: write
-  pull-requests: write
           output: 'html'
 
-      - name: Generate Lighthouse badge and commit
+      - name: Generate Lighthouse badge and commit (requires PERSONAL_TOKEN)
+        if: secrets.PERSONAL_TOKEN != ''
         run: |
           npm install -g lighthouse-badges || true
           mkdir -p badges
@@ -62,6 +64,11 @@ permissions:
           npx lighthouse-badges -s ./.lighthouseci/reports -o badges/pwa-badge.svg || true
           git add badges/pwa-badge.svg || true
           git diff --quiet --cached || (git commit -m "chore(pwa): update lighthouse badge" && git push)
+
+      - name: Warn about missing PERSONAL_TOKEN for badge push
+        if: secrets.PERSONAL_TOKEN == ''
+        run: |
+          echo "PERSONAL_TOKEN secret not found; skipping automatic badge commit/push. Add PERSONAL_TOKEN secret if you want CI to commit generated badges."
 
       - name: Upload Lighthouse reports
         uses: actions/upload-artifact@v4
