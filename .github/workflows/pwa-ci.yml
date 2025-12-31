@@ -75,16 +75,16 @@ jobs:
         run: |
           npm install -g lighthouse-badges || true
           mkdir -p badges
-            npx lighthouse-badges -u "https://yannsthlm.github.io/Podcast/" -o badges/pwa-badge.svg || true
-          if [ -f badges/pwa-badge.svg ]; then
+          npx lighthouse-badges -u "https://yannsthlm.github.io/Podcast/" -o badges/ || true
+          if [ -f badges/lighthouse_performance.svg ]; then
             git fetch origin pwa-gen-icons || true
             if git show-ref --verify --quiet refs/remotes/origin/pwa-gen-icons; then
               git checkout -b pwa-gen-icons origin/pwa-gen-icons
             else
               git checkout -b pwa-gen-icons
             fi
-            git add badges/pwa-badge.svg || true
-            git commit -m "chore(pwa): update lighthouse badge" || echo "no changes to commit"
+            git add badges/*.svg || true
+            git commit -m "chore(pwa): update lighthouse badges" || echo "no changes to commit"
             if [ -n "$PERSONAL_TOKEN" ]; then
               git push "https://x-access-token:${PERSONAL_TOKEN}@github.com/${GITHUB_REPOSITORY}" pwa-gen-icons --force-with-lease || echo "push failed"
             else
