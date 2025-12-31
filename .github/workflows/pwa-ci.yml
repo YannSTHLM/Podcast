@@ -23,12 +23,19 @@ jobs:
           if [ -f assets/icons/icon-192.svg ]; then convert assets/icons/icon-192.svg -resize 192x192 assets/icons/icon-192.png || true; fi
           if [ -f assets/icons/icon-512.svg ]; then convert assets/icons/icon-512.svg -resize 512x512 assets/icons/icon-512.png || true; fi
 
-      - name: Commit generated icons
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/icons/icon-192.png assets/icons/icon-512.png || true
-          git diff --quiet --cached || (git commit -m "chore(pwa): generate PNG icons from SVG" && git push)
+      - name: Create PR with generated icons
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: pwa-gen-icons
+          commit-message: "chore(pwa): generate PNG icons from SVG"
+          title: "chore(pwa): generate PNG icons from SVG"
+          body: "This PR adds generated PNG icons produced from SVG sources by the CI workflow."
+          base: main
+          labels: automated, pwa
+          path: |
+            assets/icons/icon-192.png
+            assets/icons/icon-512.png
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v9
