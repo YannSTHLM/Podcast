@@ -274,7 +274,10 @@
         <button class="btn btn-download" id="install-btn" style="display:none; margin-left:8px;">Install App</button>
         <h1>Podcasts</h1>
         <p>Curated episodes from around the web</p>
-        <div class="last-updated" id="last-updated"></div>
+        <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:6px;">
+            <div class="last-updated" id="last-updated"></div>
+            <div id="online-status" title="Network status" style="font-size:0.85rem; color:var(--text-secondary);">● <span id="online-text">Online</span></div>
+        </div>
     </header>
 
     <main>
@@ -369,6 +372,15 @@
                     <span id="opml-import-progress-text">Idle</span>
                 </div>
                 <div id="opml-import-summary" style="max-height:160px; overflow:auto; margin-top:8px; color:var(--text-color);"></div>
+            </div>
+
+            <div id="webapp-section" style="border-top:1px solid var(--border-color); padding-top:10px;">
+                <div class="section-title">Web App</div>
+                <div style="color:var(--text-secondary); margin-bottom:8px;">Installable PWA with offline caching and shortcuts. Use the button to install, or follow the iOS instructions.</div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn-play" onclick="triggerInstall()">Install App</button>
+                    <div id="webapp-info" style="color:var(--text-secondary); font-size:0.9rem;"></div>
+                </div>
             </div>
 
             <div style="flex:1; overflow-y:auto; border-top:1px solid var(--border-color); padding-top:10px;">
@@ -1275,6 +1287,25 @@
         // Fallback: show instructions
         document.getElementById('install-instructions-modal').classList.add('active');
     }
+
+    // --- Network status indicator ---
+    function updateOnlineStatus() {
+        const el = document.getElementById('online-status');
+        const txt = document.getElementById('online-text');
+        if (!el || !txt) return;
+        if (navigator.onLine) {
+            el.style.color = 'var(--success-color)';
+            txt.textContent = 'Online';
+        } else {
+            el.style.color = 'var(--error-color)';
+            txt.textContent = 'Offline';
+        }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    // initialize
+    updateOnlineStatus();
 
 </script>
 </body>
