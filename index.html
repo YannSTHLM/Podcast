@@ -1295,7 +1295,7 @@
             return;
         }
         
-        // Show download section (will be updated by beforeinstallprompt if available)
+        // Show download section by default
         if (downloadSection) downloadSection.style.display = 'block';
         
         // Update hint text
@@ -1315,18 +1315,12 @@
         e.preventDefault();
         deferredInstallPrompt = e;
         if (!isInStandaloneMode()) {
-            // Show header button
+            // Show header button and hide download section to avoid duplicates
             if (headerDownloadBtn) {
                 headerDownloadBtn.style.display = 'inline-block';
                 headerDownloadBtn.textContent = '📲 Install Now';
             }
-            // Update download section button
-            if (downloadAppBtn) {
-                downloadAppBtn.textContent = 'Install Now';
-                downloadAppBtn.style.backgroundColor = 'var(--success-color)';
-                downloadAppBtn.style.color = '#fff';
-                downloadAppBtn.style.fontWeight = '600';
-            }
+            if (downloadSection) downloadSection.style.display = 'none';
         }
     });
 
