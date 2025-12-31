@@ -69,19 +69,31 @@ jobs:
           lhci_version: '0.10.0'
           output: 'html'
 
-      - name: Generate Lighthouse badge and commit (requires PERSONAL_TOKEN)
+      - name: Generate Lighthouse badge and push to PR branch (uses PERSONAL_TOKEN if present)
         env:
           PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
         run: |
-          if [ -n "$PERSONAL_TOKEN" ]; then
-            npm install -g lighthouse-badges || true
-            mkdir -p badges
-            npx lighthouse-badges -s ./.lighthouseci/reports -o badges/pwa-badge.svg || true
+          npm install -g lighthouse-badges || true
+          mkdir -p badges
+          npx lighthouse-badges -s ./.lighthouseci/reports -o badges/pwa-badge.svg || true
+          if [ -f badges/pwa-badge.svg ]; then
+            git fetch origin pwa-gen-icons || true
+            if git show-ref --verify --quiet refs/remotes/origin/pwa-gen-icons; then
+              git checkout -b pwa-gen-icons origin/pwa-gen-icons
+            else
+              git checkout -b pwa-gen-icons
+            fi
             git add badges/pwa-badge.svg || true
-            git diff --quiet --cached || (git commit -m "chore(pwa): update lighthouse badge" && git push)
+            git commit -m "chore(pwa): update lighthouse badge" || echo "no changes to commit"
+            if [ -n "$PERSONAL_TOKEN" ]; then
+              git push "https://x-access-token:${PERSONAL_TOKEN}@github.com/${GITHUB_REPOSITORY}" pwa-gen-icons --force-with-lease || echo "push failed"
+            else
+              git push --force-with-lease origin pwa-gen-icons || echo "push failed (insufficient permissions)"
+            fi
           else
-            echo "PERSONAL_TOKEN secret not found; skipping automatic badge commit/push. Add PERSONAL_TOKEN secret if you want CI to commit generated badges."
+            echo "No badge generated; skipping push."
           fi
+        continue-on-error: true
 
       - name: Upload Lighthouse reports
         uses: actions/upload-artifact@v4
