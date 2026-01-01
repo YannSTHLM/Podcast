@@ -276,6 +276,9 @@
         <button class="theme-toggle" id="theme-toggle" title="Toggle Dark Mode">🌙</button>
         <h1>Podcasts</h1>
         <p>Curated episodes from around the web</p>
+        <div id="status-banner" class="status-banner--hidden" style="margin: 10px 0; padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; text-align: center;">
+            <span id="status-text"></span>
+        </div>
         <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:6px; flex-wrap: wrap;">
             <div class="last-updated" id="last-updated"></div>
             <div id="online-status" title="Network status" style="font-size:0.85rem; color:var(--text-secondary);">● <span id="online-text">Online</span></div>
@@ -337,7 +340,7 @@
 
             <div class="filter-group" style="flex: 0 0 auto;">
                 <label>&nbsp;</label>
-                <button class="btn btn-manage" onclick="openManager()">Manage Feeds</button>
+                <button id="manage-feeds-btn" class="btn btn-manage">Manage Feeds</button>
             </div>
         </section>
 
@@ -353,7 +356,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2>Manage Subscriptions</h2>
-            <button class="close-btn" onclick="closeManager()">×</button>
+            <button id="manage-close-btn" class="close-btn">×</button>
         </div>
         <div class="modal-body">
             
@@ -361,7 +364,7 @@
                 <div class="section-title">Search Directory (Apple Podcasts)</div>
                 <div class="search-box">
                     <input type="text" id="directory-search-input" placeholder="Search for a podcast (e.g. 'History', 'Tech')...">
-                    <button class="btn btn-play" onclick="searchDirectory()">Search</button>
+                    <button id="directory-search-btn" class="btn btn-play">Search</button>
                 </div>
                 <div id="directory-results" class="directory-results" style="display:none;"></div>
             </div>
@@ -370,7 +373,7 @@
                 <div class="section-title">Or Add Manual URL</div>
                 <div class="search-box">
                     <input type="url" id="new-feed-input" placeholder="Paste RSS Feed URL here...">
-                    <button class="btn btn-download" onclick="addNewFeed()">Add URL</button>
+                    <button id="add-feed-btn" class="btn btn-download">Add URL</button>
                 </div>
             </div>
 
@@ -378,7 +381,7 @@
                 <div class="section-title">Import OPML from URL</div>
                 <div class="search-box">
                     <input type="url" id="opml-url-input" placeholder="Paste OPML URL (https://...)">
-                    <button class="btn btn-play" onclick="importOPMLFromUrl()">Import OPML</button>
+                    <button id="import-opml-btn" class="btn btn-play">Import OPML</button>
                 </div>
             </div>
 
@@ -395,9 +398,9 @@
                 <div class="section-title">Web App</div>
                 <div style="color:var(--text-secondary); margin-bottom:8px;">Installable PWA with offline caching and shortcuts. Use the button to install, or follow the iOS instructions.</div>
                 <div style="display:flex; gap:8px; align-items:center;">
-                    <button class="btn btn-play" onclick="triggerInstall()">Install App</button>
+                    <button id="trigger-install-btn" class="btn btn-play">Install App</button>
                     <div id="webapp-info" style="color:var(--text-secondary); font-size:0.9rem;">Status: <span id="sw-status">Checking...</span></div>
-                    <button class="btn btn-download" onclick="clearAppCache()" title="Clear cached assets">Clear Cache</button>
+                    <button id="clear-cache-btn" class="btn btn-download" title="Clear cached assets">Clear Cache</button>
                 </div>
             </div>
 
@@ -408,14 +411,14 @@
         </div>
         <div class="modal-footer">
             <div style="display:flex; gap:8px; align-items:center;">
-                <button class="btn btn-download" onclick="exportOPML()">📤 Export OPML</button>
-                <button class="btn btn-download" onclick="document.getElementById('opml-upload').click()">📥 Import OPML</button>
-                <button class="btn btn-play" onclick="triggerInstall()">📱 Install App</button>
+                <button id="export-opml-btn" class="btn btn-download">📤 Export OPML</button>
+                <button id="opml-upload-btn" class="btn btn-download">📥 Import OPML</button>
+                <button id="install-footer-btn" class="btn btn-play">📱 Install App</button>
                 <input type="file" id="opml-upload" accept=".opml,.xml" style="display:none" />
             </div>
             <div>
-                <button class="btn btn-download" style="color: var(--error-color); border-color: var(--error-color);" onclick="resetFeeds()">Reset to Defaults</button>
-                <button class="btn btn-download" onclick="closeManager()">Close</button>
+                <button id="reset-feeds-btn" class="btn btn-download" style="color: var(--error-color); border-color: var(--error-color);">Reset to Defaults</button>
+                <button id="close-manager-btn" class="btn btn-download">Close</button>
             </div>
         </div>
     </div>
@@ -425,7 +428,7 @@
     <div class="modal-content" style="max-width:480px; max-height:420px;">
         <div class="modal-header">
             <h2>📱 Install as Web App</h2>
-            <button class="close-btn" onclick="document.getElementById('install-instructions-modal').classList.remove('active')">×</button>
+            <button id="close-install-instructions-btn" class="close-btn">×</button>
         </div>
         <div class="modal-body">
             <div style="font-size:0.95rem; color:var(--text-color); line-height: 1.6;">
@@ -447,7 +450,7 @@
                 </div>
             </div>
             <div style="margin-top:16px; text-align:right;">
-                <button class="btn btn-download" onclick="document.getElementById('install-instructions-modal').classList.remove('active')">Close</button>
+                <button id="close-install-instructions-close-btn" class="btn btn-download">Close</button>
             </div>
         </div>
     </div>
@@ -559,6 +562,19 @@
     const episodeListEl = document.getElementById('episode-list');
     const statusBanner = document.getElementById('status-banner');
     const statusText = document.getElementById('status-text');
+    
+    // Ensure elements exist before using them
+    if (!statusBanner || !statusText) {
+        console.warn('Status banner elements not found, creating them dynamically');
+        const banner = document.createElement('div');
+        banner.id = 'status-banner';
+        banner.className = 'status-banner--hidden';
+        banner.style.cssText = 'margin: 10px 0; padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; text-align: center;';
+        const text = document.createElement('span');
+        text.id = 'status-text';
+        banner.appendChild(text);
+        document.querySelector('header').insertBefore(banner, document.querySelector('header').children[2]);
+    }
 
     // -- Initialization --
     function initializeApp() {
@@ -673,13 +689,29 @@
             const title = urlToTitle[url] || "Loading title...";
             const div = document.createElement('div');
             div.className = 'feed-list-item';
-            div.innerHTML = `
-                <div class="feed-info">
-                    <div class="feed-title">${escapeHtml(title)}</div>
-                    <div class="feed-url">${escapeHtml(url)}</div>
-                </div>
-                <button class="btn-delete" onclick="removeFeed('${url}')">Remove</button>
-            `;
+
+            const info = document.createElement('div');
+            info.className = 'feed-info';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'feed-title';
+            titleEl.textContent = title;
+
+            const urlEl = document.createElement('div');
+            urlEl.className = 'feed-url';
+            urlEl.textContent = url;
+
+            info.appendChild(titleEl);
+            info.appendChild(urlEl);
+            div.appendChild(info);
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-delete';
+            btn.type = 'button';
+            btn.textContent = 'Remove';
+            btn.addEventListener('click', () => removeFeed(url));
+
+            div.appendChild(btn);
             container.appendChild(div);
         });
     }
@@ -734,14 +766,30 @@
         data.results.forEach(pod => {
             const el = document.createElement('div');
             el.className = 'directory-item';
-            el.innerHTML = `
-                <img src="${pod.artworkUrl60 || ''}" alt="cover">
-                <div class="directory-info">
-                    <div class="directory-title">${escapeHtml(pod.collectionName)}</div>
-                    <div class="directory-author">${escapeHtml(pod.artistName)}</div>
-                </div>
-                <button class="btn-add-feed" onclick="addFromSearch('${pod.feedUrl}')">Add</button>
-            `;
+
+            const img = document.createElement('img');
+            img.src = pod.artworkUrl60 || '';
+            img.alt = pod.collectionName || 'cover';
+            el.appendChild(img);
+
+            const info = document.createElement('div');
+            info.className = 'directory-info';
+            const title = document.createElement('div');
+            title.className = 'directory-title';
+            title.textContent = pod.collectionName || '';
+            const author = document.createElement('div');
+            author.className = 'directory-author';
+            author.textContent = pod.artistName || '';
+            info.appendChild(title);
+            info.appendChild(author);
+            el.appendChild(info);
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-add-feed';
+            btn.textContent = 'Add';
+            btn.addEventListener('click', () => addFromSearch(pod.feedUrl));
+            el.appendChild(btn);
+
             resultsDiv.appendChild(el);
         });
     };
@@ -758,17 +806,30 @@
 
     async function addNewFeed() {
         const input = document.getElementById('new-feed-input');
+        if (!input) {
+            console.error('new-feed-input element not found');
+            setStatus('Input element not found', 'error', 3000);
+            return;
+        }
+        
         const url = input.value.trim();
-        if (!url) return;
+        if (!url) {
+            setStatus('Please enter a valid URL', 'warning', 3000);
+            return;
+        }
         
         if (activeFeeds.includes(url)) {
             alert("This feed is already in your list.");
             return;
         }
 
-        const originalBtnText = event.target ? event.target.textContent : "Add";
-        if(event.target) event.target.textContent = "Loading...";
+        // Find the button that triggered this (prefer id, fallback to legacy attribute selectors)
+        const oldButtons = document.querySelectorAll('button[onclick="addNewFeed()"]');
+        const btn = document.getElementById('add-feed-btn') || (oldButtons.length > 0 ? oldButtons[oldButtons.length - 1] : null);
+        const originalBtnText = btn ? btn.textContent : "Add";
+        if (btn) btn.textContent = "Loading...";
         input.disabled = true;
+        setStatus('Adding feed...', 'info');
 
         const result = await fetchRSS(url);
         if (result) {
@@ -812,14 +873,22 @@
     async function fetchRSS(url) {
         console.log(`Fetching RSS: ${url}`);
         
+        if (!url || !url.startsWith('http')) {
+            console.log(`✗ Invalid URL: ${url}`);
+            return null;
+        }
+        
         // Try corsproxy.io first
         try {
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            console.log(`Trying corsproxy.io: ${proxyUrl}`);
             const res = await fetchWithTimeout(proxyUrl, 8000);
             if (res.ok) {
                 const text = await res.text();
                 console.log(`✓ Success with corsproxy.io for ${url}`);
                 return { content: text, type: 'xml_string' };
+            } else {
+                console.log(`✗ corsproxy.io returned status ${res.status}`);
             }
         } catch (e) {
             console.log(`✗ corsproxy.io failed for ${url}:`, e.message);
@@ -828,11 +897,14 @@
         // Try allorigins.win second
         try {
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            console.log(`Trying allorigins.win: ${proxyUrl}`);
             const res = await fetchWithTimeout(proxyUrl, 8000);
             const data = await res.json();
             if (data.contents) {
                 console.log(`✓ Success with allorigins.win for ${url}`);
                 return { content: data.contents, type: 'xml_string' };
+            } else {
+                console.log(`✗ allorigins.win returned no contents`);
             }
         } catch (e) {
             console.log(`✗ allorigins.win failed for ${url}:`, e.message);
@@ -841,14 +913,14 @@
         // Try rss2json.com third
         try {
             const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
+            console.log(`Trying rss2json.com: ${proxyUrl}`);
             const res = await fetchWithTimeout(proxyUrl, 5000);
             const data = await res.json();
             if (data.status === 'ok') {
                 console.log(`✓ Success with rss2json.com for ${url}`);
                 return { content: data, type: 'json_obj' };
-            }
-        } catch (e) {
-            console.log(`✗ rss2json.com failed for ${url}:`, e.message);
+            } else {
+                console.log(`✗ rss2json.com returned status: ${data.status}`);
         }
 
         console.log(`✗ All proxies failed for ${url}`);
@@ -1032,21 +1104,54 @@
             if (ep.fileSize) badgesHtml += `<span class="badge">💾 ${formatSize(ep.fileSize)}</span>`;
             const safeFilename = `${ep.podcastTitle} - ${ep.title}.mp3`.replace(/[^a-z0-9 \.\-_]/gi, '_');
 
-            el.innerHTML = `
-                <div class="episode-info">
-                    <div class="podcast-name">${escapeHtml(ep.podcastTitle)}</div>
-                    <h3 class="episode-title">${escapeHtml(ep.title)}</h3>
-                    <div class="episode-meta-badges">${badgesHtml}</div>
-                    <div class="episode-description">${escapeHtml(ep.description)}</div>
-                    ${ep.fullContent ? `<button class="toggle-notes" onclick="this.nextElementSibling.classList.toggle('active')">Show Notes</button><div class="full-notes">${ep.fullContent}</div>` : ''}
-                </div>
-                <div class="action-row">
-                    <button class="btn btn-play">▶ Play Episode</button>
-                    <button class="btn btn-download">Download</button>
-                </div>`;
-            el.querySelector('.btn-play').onclick = () => playEpisode(ep.audioUrl, ep.title, ep.podcastTitle);
-            const dlBtn = el.querySelector('.btn-download');
-            dlBtn.onclick = () => downloadEpisode(ep.audioUrl, safeFilename, dlBtn);
+            // Build episode DOM safely without injecting untrusted HTML
+            const info = document.createElement('div');
+            info.className = 'episode-info';
+
+            const podName = document.createElement('div');
+            podName.className = 'podcast-name';
+            podName.textContent = ep.podcastTitle;
+
+            const epTitle = document.createElement('h3');
+            epTitle.className = 'episode-title';
+            epTitle.textContent = ep.title;
+
+            const meta = document.createElement('div');
+            meta.className = 'episode-meta-badges';
+            // badgesHtml contains only safe, generated text; add spans instead of innerHTML
+            const dateSpan = document.createElement('span'); dateSpan.className = 'badge'; dateSpan.textContent = ep.pubDate.toLocaleDateString(); meta.appendChild(dateSpan);
+            if (ep.duration) { const dspan = document.createElement('span'); dspan.className = 'badge'; dspan.textContent = `⏱ ${formatDuration(ep.duration)}`; meta.appendChild(dspan); }
+            if (ep.fileSize) { const fspan = document.createElement('span'); fspan.className = 'badge'; fspan.textContent = `💾 ${formatSize(ep.fileSize)}`; meta.appendChild(fspan); }
+
+            const desc = document.createElement('div'); desc.className = 'episode-description'; desc.textContent = ep.description || '';
+
+            info.appendChild(podName);
+            info.appendChild(epTitle);
+            info.appendChild(meta);
+            info.appendChild(desc);
+
+            if (ep.fullContent) {
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'toggle-notes';
+                toggleBtn.type = 'button';
+                toggleBtn.textContent = 'Show Notes';
+                const fullNotes = document.createElement('div');
+                fullNotes.className = 'full-notes';
+                fullNotes.textContent = ep.fullContent;
+                toggleBtn.addEventListener('click', () => fullNotes.classList.toggle('active'));
+                info.appendChild(toggleBtn);
+                info.appendChild(fullNotes);
+            }
+
+            const action = document.createElement('div'); action.className = 'action-row';
+            const playBtn = document.createElement('button'); playBtn.className = 'btn btn-play'; playBtn.textContent = '▶ Play Episode';
+            const downBtn = document.createElement('button'); downBtn.className = 'btn btn-download'; downBtn.textContent = 'Download';
+            playBtn.addEventListener('click', () => playEpisode(ep.audioUrl, ep.title, ep.podcastTitle));
+            downBtn.addEventListener('click', () => downloadEpisode(ep.audioUrl, safeFilename, downBtn));
+            action.appendChild(playBtn); action.appendChild(downBtn);
+
+            el.appendChild(info);
+            el.appendChild(action);
             fragment.appendChild(el);
         });
         episodeListEl.appendChild(fragment);
@@ -1308,14 +1413,55 @@
 
     function showImportSummary(report) {
         const summaryEl = document.getElementById('opml-import-summary');
-        const parts = [];
-        parts.push(`<div><strong>Added:</strong> ${report.added.length}</div>`);
-        if (report.added.length) parts.push(`<ul>${report.added.map(u => `<li><a href="${u}" target="_blank">${escapeHtml(u)}</a></li>`).join('')}</ul>`);
-        parts.push(`<div><strong>Skipped (already present):</strong> ${report.skipped.length}</div>`);
-        if (report.skipped.length) parts.push(`<ul>${report.skipped.map(u => `<li>${escapeHtml(u)}</li>`).join('')}</ul>`);
-        parts.push(`<div><strong>Malformed:</strong> ${report.malformed.length}</div>`);
-        if (report.malformed.length) parts.push(`<ul>${report.malformed.map(o => `<li>${escapeHtml(o.title||'')}: ${escapeHtml(o.url||'')}</li>`).join('')}</ul>`);
-        summaryEl.innerHTML = parts.join('');
+        summaryEl.innerHTML = '';
+
+        const addedDiv = document.createElement('div');
+        const addedStrong = document.createElement('strong'); addedStrong.textContent = 'Added:';
+        addedDiv.appendChild(addedStrong);
+        addedDiv.appendChild(document.createTextNode(` ${report.added.length}`));
+        summaryEl.appendChild(addedDiv);
+
+        if (report.added.length) {
+            const ul = document.createElement('ul');
+            report.added.forEach(u => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                try { a.href = u; } catch(e) { a.href = '#'; }
+                a.target = '_blank';
+                a.textContent = u;
+                li.appendChild(a);
+                ul.appendChild(li);
+            });
+            summaryEl.appendChild(ul);
+        }
+
+        const skippedDiv = document.createElement('div');
+        const skippedStrong = document.createElement('strong'); skippedStrong.textContent = 'Skipped (already present):';
+        skippedDiv.appendChild(skippedStrong);
+        skippedDiv.appendChild(document.createTextNode(` ${report.skipped.length}`));
+        summaryEl.appendChild(skippedDiv);
+        if (report.skipped.length) {
+            const ul = document.createElement('ul');
+            report.skipped.forEach(u => {
+                const li = document.createElement('li'); li.textContent = u; ul.appendChild(li);
+            });
+            summaryEl.appendChild(ul);
+        }
+
+        const malformedDiv = document.createElement('div');
+        const malformedStrong = document.createElement('strong'); malformedStrong.textContent = 'Malformed:';
+        malformedDiv.appendChild(malformedStrong);
+        malformedDiv.appendChild(document.createTextNode(` ${report.malformed.length}`));
+        summaryEl.appendChild(malformedDiv);
+        if (report.malformed.length) {
+            const ul = document.createElement('ul');
+            report.malformed.forEach(o => {
+                const li = document.createElement('li');
+                li.textContent = `${o.title || ''}: ${o.url || ''}`;
+                ul.appendChild(li);
+            });
+            summaryEl.appendChild(ul);
+        }
     }
 
     function showOpmlImportPanel() {
@@ -1426,11 +1572,17 @@
     // Header download button
     if (headerDownloadBtn) {
         headerDownloadBtn.addEventListener('click', handleInstall);
+        console.log('Header download button listener attached');
+    } else {
+        console.warn('Header download button not found');
     }
 
     // Download section button
     if (downloadAppBtn) {
         downloadAppBtn.addEventListener('click', handleInstall);
+        console.log('Download app button listener attached');
+    } else {
+        console.warn('Download app button not found');
     }
 
     // How to Install button - just shows instructions
@@ -1439,6 +1591,9 @@
         howToInstallBtn.addEventListener('click', () => {
             document.getElementById('install-instructions-modal').classList.add('active');
         });
+        console.log('How to install button listener attached');
+    } else {
+        console.warn('How to install button not found');
     }
 
     window.addEventListener('appinstalled', () => {
@@ -1474,6 +1629,168 @@
     window.addEventListener('offline', updateOnlineStatus);
     // initialize
     updateOnlineStatus();
+
+    // --- FIXES FOR BUTTONS AND PODCAST LOADING ---
+    
+    // Ensure all required DOM elements exist
+    function ensureDomElements() {
+        // Check for missing status elements
+        if (!document.getElementById('status-banner')) {
+            const banner = document.createElement('div');
+            banner.id = 'status-banner';
+            banner.className = 'status-banner--hidden';
+            banner.style.cssText = 'margin: 10px 0; padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; text-align: center;';
+            const text = document.createElement('span');
+            text.id = 'status-text';
+            banner.appendChild(text);
+            const header = document.querySelector('header');
+            if (header) {
+                header.insertBefore(banner, header.children[2]);
+            }
+        }
+        
+        // Check for missing itunes-script placeholder
+        if (!document.getElementById('itunes-script')) {
+            const placeholder = document.createElement('div');
+            placeholder.id = 'itunes-script';
+            placeholder.style.display = 'none';
+            document.body.appendChild(placeholder);
+        }
+        
+        // Re-attach button event listeners if they're missing
+        setTimeout(() => {
+            const headerBtn = document.getElementById('header-download-btn');
+            const downloadBtn = document.getElementById('download-app-btn');
+            const howToBtn = document.getElementById('how-to-install-btn');
+
+            if (headerBtn && !headerBtn._listenerAttached) {
+                headerBtn.addEventListener('click', handleInstall);
+                headerBtn._listenerAttached = true;
+                console.log('✓ Header download button listener re-attached');
+            }
+
+            if (downloadBtn && !downloadBtn._listenerAttached) {
+                downloadBtn.addEventListener('click', handleInstall);
+                downloadBtn._listenerAttached = true;
+                console.log('✓ Download app button listener re-attached');
+            }
+
+            if (howToBtn && !howToBtn._listenerAttached) {
+                howToBtn.addEventListener('click', () => {
+                    const modal = document.getElementById('install-instructions-modal');
+                    if (modal) modal.classList.add('active');
+                });
+                howToBtn._listenerAttached = true;
+                console.log('✓ How to install button listener re-attached');
+            }
+
+            // Attach Manage / Manager-related buttons
+            const manageBtn = document.getElementById('manage-feeds-btn');
+            if (manageBtn && !manageBtn._listenerAttached) {
+                manageBtn.addEventListener('click', openManager);
+                manageBtn._listenerAttached = true;
+                console.log('✓ Manage feeds button listener attached');
+            }
+
+            const manageCloseBtn = document.getElementById('manage-close-btn');
+            if (manageCloseBtn && !manageCloseBtn._listenerAttached) {
+                manageCloseBtn.addEventListener('click', closeManager);
+                manageCloseBtn._listenerAttached = true;
+                console.log('✓ Manage close button listener attached');
+            }
+
+            const directorySearchBtn = document.getElementById('directory-search-btn');
+            if (directorySearchBtn && !directorySearchBtn._listenerAttached) {
+                directorySearchBtn.addEventListener('click', searchDirectory);
+                directorySearchBtn._listenerAttached = true;
+                console.log('✓ Directory search button listener attached');
+            }
+
+            // Attach Add URL and Import OPML buttons
+            const addFeedBtn = document.getElementById('add-feed-btn');
+            if (addFeedBtn && !addFeedBtn._listenerAttached) {
+                addFeedBtn.addEventListener('click', addNewFeed);
+                addFeedBtn._listenerAttached = true;
+                console.log('✓ Add feed button listener attached');
+            }
+            const importOpmlBtn = document.getElementById('import-opml-btn');
+            if (importOpmlBtn && !importOpmlBtn._listenerAttached) {
+                importOpmlBtn.addEventListener('click', importOPMLFromUrl);
+                importOpmlBtn._listenerAttached = true;
+                console.log('✓ Import OPML button listener attached');
+            }
+
+            // Web app / cache / export / import / reset
+            const triggerInstallBtn = document.getElementById('trigger-install-btn');
+            if (triggerInstallBtn && !triggerInstallBtn._listenerAttached) {
+                triggerInstallBtn.addEventListener('click', triggerInstall);
+                triggerInstallBtn._listenerAttached = true;
+                console.log('✓ Trigger install button attached');
+            }
+
+            const clearCacheBtn = document.getElementById('clear-cache-btn');
+            if (clearCacheBtn && !clearCacheBtn._listenerAttached) {
+                clearCacheBtn.addEventListener('click', clearAppCache);
+                clearCacheBtn._listenerAttached = true;
+                console.log('✓ Clear cache button attached');
+            }
+
+            const exportBtn = document.getElementById('export-opml-btn');
+            if (exportBtn && !exportBtn._listenerAttached) {
+                exportBtn.addEventListener('click', exportOPML);
+                exportBtn._listenerAttached = true;
+                console.log('✓ Export OPML button attached');
+            }
+
+            const opmlUploadBtn = document.getElementById('opml-upload-btn');
+            if (opmlUploadBtn && !opmlUploadBtn._listenerAttached) {
+                opmlUploadBtn.addEventListener('click', () => document.getElementById('opml-upload').click());
+                opmlUploadBtn._listenerAttached = true;
+                console.log('✓ Opml upload trigger button attached');
+            }
+
+            const installFooterBtn = document.getElementById('install-footer-btn');
+            if (installFooterBtn && !installFooterBtn._listenerAttached) {
+                installFooterBtn.addEventListener('click', triggerInstall);
+                installFooterBtn._listenerAttached = true;
+                console.log('✓ Install footer button attached');
+            }
+
+            const resetBtn = document.getElementById('reset-feeds-btn');
+            if (resetBtn && !resetBtn._listenerAttached) {
+                resetBtn.addEventListener('click', resetFeeds);
+                resetBtn._listenerAttached = true;
+                console.log('✓ Reset feeds button attached');
+            }
+
+            const closeManagerBtn = document.getElementById('close-manager-btn');
+            if (closeManagerBtn && !closeManagerBtn._listenerAttached) {
+                closeManagerBtn.addEventListener('click', closeManager);
+                closeManagerBtn._listenerAttached = true;
+                console.log('✓ Close manager footer button attached');
+            }
+
+            const closeInstallBtn = document.getElementById('close-install-instructions-btn');
+            if (closeInstallBtn && !closeInstallBtn._listenerAttached) {
+                closeInstallBtn.addEventListener('click', () => document.getElementById('install-instructions-modal').classList.remove('active'));
+                closeInstallBtn._listenerAttached = true;
+                console.log('✓ Close install instructions (×) attached');
+            }
+            const closeInstallCloseBtn = document.getElementById('close-install-instructions-close-btn');
+            if (closeInstallCloseBtn && !closeInstallCloseBtn._listenerAttached) {
+                closeInstallCloseBtn.addEventListener('click', () => document.getElementById('install-instructions-modal').classList.remove('active'));
+                closeInstallCloseBtn._listenerAttached = true;
+                console.log('✓ Close install instructions (Close) attached');
+            }
+        }, 100);
+    }
+    
+    // Run fixes after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureDomElements);
+    } else {
+        ensureDomElements();
+    }
 
 </script>
 </body>
