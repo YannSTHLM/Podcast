@@ -621,7 +621,6 @@
         }
 
         document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleDateString()}`;
-    });
 
     // --- Theme Logic ---
     function initTheme() {
@@ -1568,6 +1567,7 @@
             }
             deferredInstallPrompt = null;
         } else {
+            // Fallback: show instructions if prompt not available (e.g. desktop Chrome manual install)
             document.getElementById('install-instructions-modal').classList.add('active');
         }
     }
