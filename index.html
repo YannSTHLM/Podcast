@@ -413,7 +413,6 @@
             <div style="display:flex; gap:8px; align-items:center;">
                 <button id="export-opml-btn" class="btn btn-download">📤 Export OPML</button>
                 <button id="opml-upload-btn" class="btn btn-download">📥 Import OPML</button>
-                <button id="install-footer-btn" class="btn btn-play">📱 Install App</button>
                 <input type="file" id="opml-upload" accept=".opml,.xml" style="display:none" />
             </div>
             <div>
@@ -621,7 +620,6 @@
         }
 
         document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleDateString()}`;
-    });
 
     // --- Theme Logic ---
     function initTheme() {
@@ -921,6 +919,9 @@
                 return { content: data, type: 'json_obj' };
             } else {
                 console.log(`✗ rss2json.com returned status: ${data.status}`);
+            }
+        } catch (e) {
+            console.log(`✗ rss2json.com failed for ${url}:`, e.message);
         }
 
         console.log(`✗ All proxies failed for ${url}`);
@@ -1510,11 +1511,11 @@
         if (installHint) {
             installHint.style.display = 'block';
             if (isIos()) {
-                installHint.innerHTML = '💡 On iOS: Tap the Share button (box with arrow ↑) → "Add to Home Screen"';
+                installHint.textContent = '💡 On iOS: Tap the Share button (box with arrow ↑) → "Add to Home Screen"';
             } else if (isAndroid()) {
-                installHint.innerHTML = '💡 On Android: Tap menu (3 dots) → "Install app" or "Add to Home screen"';
+                installHint.textContent = '💡 On Android: Tap menu (3 dots) → "Install app" or "Add to Home screen"';
             } else {
-                installHint.innerHTML = '💡 Click "Download App" to install, or use your browser menu';
+                installHint.textContent = '💡 Click "Download App" to install, or use your browser menu';
             }
         }
     }
@@ -1565,6 +1566,7 @@
             }
             deferredInstallPrompt = null;
         } else {
+            // Fallback: show instructions if prompt not available (e.g. desktop Chrome manual install)
             document.getElementById('install-instructions-modal').classList.add('active');
         }
     }
