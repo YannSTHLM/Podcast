@@ -921,6 +921,9 @@
                 return { content: data, type: 'json_obj' };
             } else {
                 console.log(`✗ rss2json.com returned status: ${data.status}`);
+            }
+        } catch (e) {
+            console.log(`✗ rss2json.com failed for ${url}:`, e.message);
         }
 
         console.log(`✗ All proxies failed for ${url}`);
