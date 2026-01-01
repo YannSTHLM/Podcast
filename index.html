@@ -1510,11 +1510,11 @@
         if (installHint) {
             installHint.style.display = 'block';
             if (isIos()) {
-                installHint.innerHTML = '💡 On iOS: Tap the Share button (box with arrow ↑) → "Add to Home Screen"';
+                installHint.textContent = '💡 On iOS: Tap the Share button (box with arrow ↑) → "Add to Home Screen"';
             } else if (isAndroid()) {
-                installHint.innerHTML = '💡 On Android: Tap menu (3 dots) → "Install app" or "Add to Home screen"';
+                installHint.textContent = '💡 On Android: Tap menu (3 dots) → "Install app" or "Add to Home screen"';
             } else {
-                installHint.innerHTML = '💡 Click "Download App" to install, or use your browser menu';
+                installHint.textContent = '💡 Click "Download App" to install, or use your browser menu';
             }
         }
     }
